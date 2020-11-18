@@ -3,7 +3,7 @@ export function MCComponent(options) {
     return Component;
   }
 
-  const { created: onInit, attached, ready, detached: didUnmount, properties: props, observers, ...extra } = options;
+  const { created: onInit, attached, ready, detached: didUnmount, properties: props, observers, methods = {}, ...extra } = options;
 
   for (const k in props) {
     if (typeof props[k] === "object") {
@@ -20,7 +20,7 @@ export function MCComponent(options) {
       return obj;
     }
 
-    if (keySegment in keySegments) {
+    if (keySegment in obj) {
       return tryGet(obj[keySegment], keySegments);
     }
 
@@ -47,20 +47,22 @@ export function MCComponent(options) {
     }
   }
 
+  methods.triggerEvent = function (eventName, data, options) {
+    eventName = eventName[0].toUpperCase() + eventName.slice(1);
+    const handler = this.props["on" + eventName] || this.props["catch" + eventName];
+    handler && handler({ detail: data });
+  };
+
   return Component({
     onInit,
     didMount() {
-      attached && attached();
-      ready && ready();
+      attached && attached.call(this);
+      ready && ready.call(this);
     },
     didUnmount,
     didUpdate,
     props,
-    triggerEvent(eventName, data, options) {
-      eventName = eventName[0].toUpperCase() + eventName.slice(1);
-      const handler = this.props["bind" + eventName] || this.props["catch" + eventName];
-      handler && handler(data);
-    },
+    methods,
     ...extra
   });
 }
