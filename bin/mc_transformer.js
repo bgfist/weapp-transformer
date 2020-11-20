@@ -99,7 +99,7 @@ var wxmlSuffixes = {
 
 var wxmlDirectivePrefixes = {
     alipay: 'a:',
-    baidu: 's:',
+    baidu: 's-',
     bytedance: 'tt:'
 }
 
@@ -118,12 +118,12 @@ var wxsTags = {
 function js() {
     return gulp.src(path.join(src, 'app.js'))
         // 统一"wx."系列api
-        .pipe(replace(/^/, 'import "mc_transformer/polyfill.' + platform + '.js";\n'))
+        .pipe(gulpIf(isAliPay, replace(/^/, 'import "mc_transformer/polyfill.' + platform + '.js";\n')))
         .pipe(gulp.src([path.join(src, '**/*.js'), '!' + path.join(src, 'app.js')]))
         // 替换api前缀
         .pipe(replace(/(?<!-)\bwx(?=\.)/g, jsApiPrefixes[platform]))
         // 统一全局方法
-        .pipe(replace(/^([\s\S]*)\bComponent/, 'import {MCComponent} from "mc_transformer";\n$1MCComponent'))
+        .pipe(gulpIf(isAliPay, replace(/^([\s\S]*)\bComponent/, 'import {MCComponent} from "mc_transformer";\n$1MCComponent')))
         .pipe(gulp.dest(dist));
 }
 
@@ -171,11 +171,11 @@ function wxml() {
 
 function wxs() {
     return gulp.src(path.join(src, '**/*.wxs'))
+        // 替换模块导入导出语法
+        .pipe(gulpIf(isAliPay, replace(/module\.exports(\s*?)=/, 'export default$1')))
         .pipe(rename(function (path) {
             path.extname = wxsSuffixes[platform];
         }))
-        // 替换模块导入导出语法
-        .pipe(gulpIf(isAliPay, replace(/module\.exports(\s*?)=/, 'export default$1')))
         .pipe(gulp.dest(dist));
 }
 
@@ -183,9 +183,6 @@ function json() {
     var stream = gulp.src(path.join(src, '**/*.json'));
 
     if (isAliPay) {
-        var packageJson = require(path.resolve(process.cwd(), src, 'package.json'));
-        var npmModules = packageJson.dependencies;
-
         stream = stream
             // key变了
             .pipe(replace('navigationBarTitleText', 'defaultTitle'))
@@ -203,28 +200,32 @@ function json() {
                     .replace(/"text"(?=\s*:)/g, '"name"')
                     .replace(/"iconPath"(?=\s*:)/g, '"icon"')
                     .replace(/"selectedIconPath"(?=\s*:)/g, '"activeIcon"')
-            }))
-            // npm自定义组件
-            .pipe(replace(/(?<="usingComponents")([\s\S]+?)(?=\})/, function (match, p1) {
-                return p1.replace(/(?<=:\s*?")([^\.\/].*?)(?=")/g, function (match, p1) {
-                    if (p1.indexOf('plugin://') === 0) {
-                        return p1;
-                    }
-                    for (const npmModule in npmModules) {
-                        if (p1.indexOf(npmModule) === 0) {
-                            var npmModulePackageJson = require(path.resolve(process.cwd(), src, 'node_modules', npmModule, 'package.json'));
-                            var innerPath = p1.substring(npmModule.length + 1);
-                            var newP1 = path.join(npmModule, npmModulePackageJson.miniprogram, innerPath);
-
-                            console.log("[npm-component]", p1, '->', newP1);
-
-                            return newP1;
-                        }
-                    }
-                    console.error("[npm-component]", "missing", p1);
-                });
             }));
     }
+
+    // npm自定义组件
+    // TODO: 目前只有支付宝支持
+    var packageJson = require(path.resolve(process.cwd(), src, 'package.json'));
+    var npmModules = packageJson.dependencies;
+    stream = stream.pipe(replace(/(?<="usingComponents")([\s\S]+?)(?=\})/, function (match, p1) {
+        return p1.replace(/(?<=:\s*?")([^\.\/].*?)(?=")/g, function (match, p1) {
+            if (p1.indexOf('plugin://') === 0) {
+                return p1;
+            }
+            for (const npmModule in npmModules) {
+                if (p1.indexOf(npmModule) === 0) {
+                    var npmModulePackageJson = require(path.resolve(process.cwd(), src, 'node_modules', npmModule, 'package.json'));
+                    var innerPath = p1.substring(npmModule.length + 1);
+                    var newP1 = path.join(npmModule, npmModulePackageJson.miniprogram, innerPath);
+
+                    console.log("[npm-component]", p1, '->', newP1);
+
+                    return newP1;
+                }
+            }
+            console.error("[npm-component]", "missing", p1);
+        });
+    }));
 
     return stream.pipe(gulp.dest(dist));
 }
