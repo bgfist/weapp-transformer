@@ -7,12 +7,12 @@ var replace = require('gulp-replace');
 var gulpIf = require('gulp-if');
 var version = require('../package.json').version;
 
+
+/** ----------------- 处理命令行参数 ------------------- */
+
+var supportedPlatforms = ["alipay", "baidu", "bytedance"];
 var src, dist, platform, enableWatch;
 var args = process.argv.slice(2);
-
-/**
- * Usage docs.
- */
 
 var usage = [
     ''
@@ -32,10 +32,6 @@ var usage = [
     , '    -h, --help              Display help information'
     , ''
 ].join('\n');
-
-/**
- * Handle arguments.
- */
 
 var arg;
 while (args.length) {
@@ -58,7 +54,7 @@ while (args.length) {
         case '--platform':
             platform = args.shift();
             if (!platform) throw new Error('--platform <..> required');
-            if (["alipay", "baidu", "bytedance"].indexOf(platform) < 0) throw new Error('Unsupported platform: ' + platform);
+            if (supportedPlatforms.indexOf(platform) < 0) throw new Error('Unsupported platform: ' + platform);
             break;
         case '-w':
         case '--watch':
@@ -76,6 +72,10 @@ while (args.length) {
 src = src || '.';
 platform = platform || 'alipay';
 dist = path.join(dist || 'dist', platform);
+
+
+
+/** ----------------- 平台各自的配置 ------------------- */
 
 var isAliPay = platform === 'alipay';
 
@@ -115,18 +115,27 @@ var wxsTags = {
     bytedance: 'sjs'
 }
 
+
+/** ------------------------- gulp任务 ------------------------- */
+
+/**
+ * 处理js文件
+ */
 function js() {
     return gulp.src(path.join(src, 'app.js'))
-        // 统一"wx."系列api
-        .pipe(gulpIf(isAliPay, replace(/^/, 'import "mc_transformer/polyfill.' + platform + '.js";\n')))
+        // 统一"wx."系列api，注入polyfill
+        .pipe(gulpIf(isAliPay, replace(/^/, 'import "mc_transformer/alipay/polyfill.alipay";\n')))
         .pipe(gulp.src([path.join(src, '**/*.js'), '!' + path.join(src, 'app.js')]))
         // 替换api前缀
         .pipe(replace(/(?<!-)\bwx(?=\.)/g, jsApiPrefixes[platform]))
         // 统一全局方法
-        .pipe(gulpIf(isAliPay, replace(/^([\s\S]*)\bComponent/, 'import {MCComponent} from "mc_transformer";\n$1MCComponent')))
+        .pipe(gulpIf(isAliPay, replace(/^([\s\S]*)\bComponent/, 'import {MCComponent} from "mc_transformer/alipay/component.alipay";\n$1MCComponent')))
         .pipe(gulp.dest(dist));
 }
 
+/**
+ * 处理wxss文件
+ */
 function wxss() {
     return gulp.src(path.join(src, '**/*.wxss'))
         .pipe(rename(function (path) {
@@ -135,6 +144,9 @@ function wxss() {
         .pipe(gulp.dest(dist));
 }
 
+/**
+ * 处理wxml文件
+ */
 function wxml() {
     return gulp.src(path.join(src, '**/*.wxml'))
         // 替换wxs模块导入方式
@@ -169,6 +181,9 @@ function wxml() {
         .pipe(gulp.dest(dist));
 }
 
+/**
+ * 处理wxs文件
+ */
 function wxs() {
     return gulp.src(path.join(src, '**/*.wxs'))
         // 替换模块导入导出语法
@@ -179,6 +194,9 @@ function wxs() {
         .pipe(gulp.dest(dist));
 }
 
+/**
+ * 处理json文件
+ */
 function json() {
     var stream = gulp.src(path.join(src, '**/*.json'));
 
@@ -230,6 +248,9 @@ function json() {
     return stream.pipe(gulp.dest(dist));
 }
 
+/**
+ * 处理其他后缀的文件
+ */
 function others() {
     return gulp.src([
         path.join(src, '**'),
@@ -241,20 +262,8 @@ function others() {
     ]).pipe(gulp.dest(dist));
 }
 
-function build() {
-    return gulp.parallel(
-        js,
-        wxss,
-        wxml,
-        wxs,
-        json,
-        others
-    )(function (err) {
-        if (err) {
-            process.exit(1);
-        }
-    });
-}
+
+/** --------------------------------------------------------------------------- */
 
 if (enableWatch) {
     gulp.watch(path.join(src, '**/*.js'), { ignoreInitial: false }, js);
@@ -271,5 +280,16 @@ if (enableWatch) {
         '!' + path.join(src, '**/*.json')
     ], { ignoreInitial: false }, others);
 } else {
-    build();
+    gulp.parallel(
+        js,
+        wxss,
+        wxml,
+        wxs,
+        json,
+        others
+    )(function (err) {
+        if (err) {
+            process.exit(1);
+        }
+    });
 }

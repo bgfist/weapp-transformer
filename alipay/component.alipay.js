@@ -1,8 +1,8 @@
-export function MCComponent(options) {
-  if (typeof my === undefined) {
-    return Component;
-  }
+/**
+ * 让支付宝的Component写法与微信保持统一
+ */
 
+export function MCComponent(options) {
   const { created: onInit, attached, ready, detached: didUnmount, properties: props, observers, methods = {}, ...extra } = options;
 
   for (const k in props) {

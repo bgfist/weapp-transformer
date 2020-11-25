@@ -1,3 +1,7 @@
+/**
+ * 让 `my.` 系列api的写法与微信保持统一
+ */
+
 const showToast = my.showToast;
 
 my.showToast = function (options) {
