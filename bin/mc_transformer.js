@@ -78,6 +78,7 @@ dist = path.join(dist || 'dist', platform);
 /** ----------------- 平台各自的配置 ------------------- */
 
 var isAliPay = platform === 'alipay';
+var isBaidu = platform === 'baidu';
 
 var jsApiPrefixes = {
     alipay: 'my',
@@ -118,14 +119,24 @@ var wxsTags = {
 
 /** ------------------------- gulp任务 ------------------------- */
 
+function globFiles(pattern, ignore) {
+    return [
+        (ignore ? '!' : '') + path.join(src, pattern),
+        '!' + path.join(dist, '**')
+    ]
+}
+
 /**
  * 处理js文件
  */
 function js() {
-    return gulp.src(path.join(src, 'app.js'))
+    return gulp.src(globFiles('app.js'))
         // 统一"wx."系列api，注入polyfill
         .pipe(gulpIf(isAliPay, replace(/^/, 'import "mc_transformer/alipay/polyfill.alipay";\n')))
-        .pipe(gulp.src([path.join(src, '**/*.js'), '!' + path.join(src, 'app.js')]))
+        .pipe(gulp.src([
+            ...globFiles('**/*.js'),
+            ...globFiles('app.js', true)
+        ]))
         // 替换api前缀
         .pipe(replace(/(?<!-)\bwx(?=\.)/g, jsApiPrefixes[platform]))
         // 统一全局方法
@@ -137,7 +148,11 @@ function js() {
  * 处理wxss文件
  */
 function wxss() {
-    return gulp.src(path.join(src, '**/*.wxss'))
+    return gulp.src(globFiles('**/*.wxss'))
+        // 替换wxss外部导入路径
+        .pipe(replace(/\s*@import\s+.+$/mg, function (match) {
+            return match.replace('.wxss', wxssSuffixes[platform]);
+        }))
         .pipe(rename(function (path) {
             path.extname = wxssSuffixes[platform];
         }))
@@ -148,7 +163,7 @@ function wxss() {
  * 处理wxml文件
  */
 function wxml() {
-    return gulp.src(path.join(src, '**/*.wxml'))
+    return gulp.src(globFiles('**/*.wxml'))
         // 替换wxs模块导入方式
         .pipe(replace(/<wxs([^>]*?)(\/>|>\s*?<\/wxs\s*>)/g, function (match, p1, p2, offset, string) {
             var tag = wxsTags[platform];
@@ -160,6 +175,10 @@ function wxml() {
 
             console.log("[import-sjs]", ret);
             return ret;
+        }))
+        // 替换template外部导入路径
+        .pipe(replace(/<import[^>]*?(\/>|>\s*?<\/import\s*>)/g, function (match) {
+            return match.replace('.wxml', wxmlSuffixes[platform]);
         }))
         // 替换 wx:if等指令
         .pipe(replace(/wx:(?=if|elif|else|for|key)/g, wxmlDirectivePrefixes[platform]))
@@ -185,7 +204,7 @@ function wxml() {
  * 处理wxs文件
  */
 function wxs() {
-    return gulp.src(path.join(src, '**/*.wxs'))
+    return gulp.src(globFiles('**/*.wxs'))
         // 替换模块导入导出语法
         .pipe(gulpIf(isAliPay, replace(/module\.exports(\s*?)=/, 'export default$1')))
         .pipe(rename(function (path) {
@@ -198,7 +217,7 @@ function wxs() {
  * 处理json文件
  */
 function json() {
-    var stream = gulp.src(path.join(src, '**/*.json'));
+    var stream = gulp.src(globFiles('**/*.json'));
 
     if (isAliPay) {
         stream = stream
@@ -221,63 +240,64 @@ function json() {
             }));
     }
 
-    // npm自定义组件
-    // TODO: 目前只有支付宝支持
     var packageJson = require(path.resolve(process.cwd(), src, 'package.json'));
     var npmModules = packageJson.dependencies;
-    stream = stream.pipe(replace(/(?<="usingComponents")([\s\S]+?)(?=\})/, function (match, p1) {
-        return p1.replace(/(?<=:\s*?")([^\.\/].*?)(?=")/g, function (match, p1) {
-            if (p1.indexOf('plugin://') === 0) {
-                return p1;
-            }
-            for (const npmModule in npmModules) {
-                if (p1.indexOf(npmModule) === 0) {
-                    var npmModulePackageJson = require(path.resolve(process.cwd(), src, 'node_modules', npmModule, 'package.json'));
-                    var innerPath = p1.substring(npmModule.length + 1);
-                    var newP1 = path.join(npmModule, npmModulePackageJson.miniprogram, innerPath);
 
-                    console.log("[npm-component]", p1, '->', newP1);
-
-                    return newP1;
+    // npm自定义组件
+    if (isAliPay) {
+        stream = stream.pipe(replace(/(?<="usingComponents")([\s\S]+?)(?=\})/, function (match, p1) {
+            return p1.replace(/(?<=:\s*?")([^\.\/].*?)(?=")/g, function (match, p1) {
+                if (p1.indexOf('plugin://') === 0) {
+                    return p1;
                 }
-            }
-            console.error("[npm-component]", "missing", p1);
-        });
-    }));
+                for (const npmModule in npmModules) {
+                    if (p1.indexOf(npmModule) === 0) {
+                        var npmModulePackageJson = require(path.resolve(process.cwd(), src, 'node_modules', npmModule, 'package.json'));
+                        var innerPath = p1.substring(npmModule.length + 1);
+                        var newP1 = path.join(npmModule, npmModulePackageJson.miniprogram, innerPath);
+                        console.log("[npm-component]", p1, '->', newP1);
+                        return newP1;
+                    }
+                }
+                console.error("[npm-component]", "missing", p1);
+            });
+        }));
+    } else if (isBaidu) {
+        stream = stream.pipe(replace(/"miniprogram"(?=\s+:)/, "smartprogram"));
+    }
 
     return stream.pipe(gulp.dest(dist));
 }
 
 /**
- * 处理其他后缀的文件
+ * 拷贝其他后缀的文件
  */
 function others() {
     return gulp.src([
-        path.join(src, '**'),
-        '!' + path.join(src, '**/*.js'),
-        '!' + path.join(src, '**/*.wxss'),
-        '!' + path.join(src, '**/*.wxml'),
-        '!' + path.join(src, '**/*.wxs'),
-        '!' + path.join(src, '**/*.json')
+        ...globFiles('**'),
+        ...globFiles('**/*.js', true),
+        ...globFiles('**/*.wxss', true),
+        ...globFiles('**/*.wxml', true),
+        ...globFiles('**/*.wxs', true),
+        ...globFiles('**/*.json', true)
     ]).pipe(gulp.dest(dist));
 }
-
 
 /** --------------------------------------------------------------------------- */
 
 if (enableWatch) {
-    gulp.watch(path.join(src, '**/*.js'), { ignoreInitial: false }, js);
-    gulp.watch(path.join(src, '**/*.wxss'), { ignoreInitial: false }, wxss);
-    gulp.watch(path.join(src, '**/*.wxml'), { ignoreInitial: false }, wxml);
-    gulp.watch(path.join(src, '**/*.wxs'), { ignoreInitial: false }, wxs);
-    gulp.watch(path.join(src, '**/*.json'), { ignoreInitial: false }, json);
+    gulp.watch(globFiles('**/*.js'), { ignoreInitial: false }, js);
+    gulp.watch(globFiles('**/*.wxss'), { ignoreInitial: false }, wxss);
+    gulp.watch(globFiles('**/*.wxml'), { ignoreInitial: false }, wxml);
+    gulp.watch(globFiles('**/*.wxs'), { ignoreInitial: false }, wxs);
+    gulp.watch(globFiles('**/*.json'), { ignoreInitial: false }, json);
     gulp.watch([
-        path.join(src, '**'),
-        '!' + path.join(src, '**/*.js'),
-        '!' + path.join(src, '**/*.wxss'),
-        '!' + path.join(src, '**/*.wxml'),
-        '!' + path.join(src, '**/*.wxs'),
-        '!' + path.join(src, '**/*.json')
+        ...globFiles('**'),
+        ...globFiles('**/*.js', true),
+        ...globFiles('**/*.wxss', true),
+        ...globFiles('**/*.wxml', true),
+        ...globFiles('**/*.wxs', true),
+        ...globFiles('**/*.json', true)
     ], { ignoreInitial: false }, others);
 } else {
     gulp.parallel(
