@@ -3,20 +3,32 @@
   "version": "0.0.1",
   "description": "",
   "bin": {
-    "mc_transformer": "bin/mc_transformer.js"
+    "mc_transformer": "bin/ast_transformer.js"
   },
   "main": "index.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "scripts": {
+    "build": "babel src -d lib",
+    "transform": "npm run build && ./bin/ast_transform.js examples -p alipay"
+  },
   "devDependencies": {
+    "@babel/cli": "^7.12.8",
     "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.7",
+    "@rollup/plugin-commonjs": "^17.0.0",
     "@types/quickapp": "git+https://github.com/vivoquickapp/quickapp-types.git",
     "@types/wechat-miniprogram": "^3.1.0",
+    "babel-plugin-transform-commonjs": "^1.1.6",
+    "cheerio": "^1.0.0-rc.3",
     "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
     "gulp-if": "^3.0.0",
     "gulp-rename": "^2.0.0",
     "gulp-replace": "^1.0.0",
-    "mini-types": "^0.1.4"
+    "mini-types": "^0.1.4",
+    "rollup": "^2.33.3",
+    "through2": "^2.0.5"
   }
 }

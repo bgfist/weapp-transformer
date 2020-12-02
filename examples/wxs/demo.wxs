@@ -1,0 +1,16 @@
+const aaa = 1111;
+
+
+const bbb = require('./aaa');
+
+exports.bbb = bbb;
+
+exports.aaa = aaa;
+
+
+function test() {
+    const { a, b, c } = something;
+
+    console.log("okkk");
+}
+

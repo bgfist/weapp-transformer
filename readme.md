@@ -10,6 +10,11 @@
 目前的方案是将 `wx.` 后缀的api转换成其他平台对应的方法(正则替换)，文件名后缀也做一下处理。
 要做到精准无误的替换当然还是用`ast`解析比较好。
 
+ast. wxs
+npm模块自己打包
+文件带平台相关的后缀, 文件级
+sjs内联转外部模块
+
 ### 开始使用
 
 ```sh
@@ -20,8 +25,13 @@ npm install -D mc_transformer
 ```sh
 mc_transformer src
 ```
-
 生成的代码在 `dist/alipay` 目录下
+
+指定生成目录：
+```sh
+# 生成至 build/alipay
+mc_transformer src -o build
+```
 
 监听文件变化实时编译：
 ```sh
@@ -31,6 +41,11 @@ mc_transformer src --watch
 转成百度小程序：
 ```sh
 mc_transformer src --platform baidu
+```
+
+转成字节跳动小程序：
+```sh
+mc_transformer src --platform bytedance
 ```
 
 ### 目录结构
@@ -49,17 +64,23 @@ mc_transformer src --platform baidu
 ### 通用
 
 1. 图片路径不要加不必要的空格，不然开发者工具会识别不了，如网络资源路径前面不要有空格 `" https://..."` -> `"https://..."`
+2. npm自定义组件的问题、小程序插件的问题
+3. 鉴权
 
 ### 支付宝
 
-1. `data-` 属性必须全部转成小写形式，因为微信会自动转。如：`data-urlMap` -> `data-urlmap`
-2. 注意一些异步api的调用
+平台差异较大，主要是Component构造器写法不同，及事件机制不同。
+
+1. `data-` 属性必须全部转成小写形式，因为微信会自动转，但支付宝不会。如：`data-urlMap` -> `data-urlmap`
+2. 注意一些异步api的调用，涉及到`page.js`的加载时机和执行时机。
 
 ### 百度
 
 1. `s-for` 与 `s-if` 不能写在同一个标签上
-2. 自定义组件属性名应避免以 `prop-` 开头 在处理过程中会将该前缀删除
+2. 自定义组件属性名应避免以 `prop-` 开头，在处理过程中会将该前缀删除
 
 ### 头条
 
-1. 平台还不完善，开发者工具里sjs语法直接报错
+1. beta版本不支持sjs语法，用稳定版（文档有误）
+2. 自定义组件只支持属性的监听observer，不支持observers
+3. npm模块构建有问题

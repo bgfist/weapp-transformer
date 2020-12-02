@@ -7,7 +7,6 @@ var replace = require('gulp-replace');
 var gulpIf = require('gulp-if');
 var version = require('../package.json').version;
 
-
 /** ----------------- 处理命令行参数 ------------------- */
 
 var supportedPlatforms = ["alipay", "baidu", "bytedance"];
@@ -126,7 +125,7 @@ function js() {
         // 统一"wx."系列api，注入polyfill
         .pipe(gulpIf(isAliPay, replace(/^/, 'import "mc_transformer/alipay/polyfill.alipay";\n')))
         .pipe(gulp.src([path.join(src, '**/*.js'), '!' + path.join(src, 'app.js')]))
-        // 替换api前缀
+        // 替换api前缀，此处不严谨，因为 wx. 可能出现在字符串中，如 "baidu-wx.min.js"
         .pipe(replace(/(?<!-)\bwx(?=\.)/g, jsApiPrefixes[platform]))
         // 统一全局方法
         .pipe(gulpIf(isAliPay, replace(/^([\s\S]*)\bComponent/, 'import {MCComponent} from "mc_transformer/alipay/component.alipay";\n$1MCComponent')))
@@ -222,7 +221,7 @@ function json() {
     }
 
     // npm自定义组件
-    // TODO: 目前只有支付宝支持
+    // TODO: 目前只有支付宝、百度支持
     var packageJson = require(path.resolve(process.cwd(), src, 'package.json'));
     var npmModules = packageJson.dependencies;
     stream = stream.pipe(replace(/(?<="usingComponents")([\s\S]+?)(?=\})/, function (match, p1) {

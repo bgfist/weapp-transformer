@@ -1,0 +1,24 @@
+<aaa name="ok" wx:if="false" wx:for>wx:if = "ok;a";</aaa>
+<wxs module="dadad" wx:if="ok" wx:else="ooo">
+  var aaa = require('../a');
+  module.exports = {
+  aaa: 1
+  }
+</wxs>
+<image name="aaa" />
+<image name="bbb"   dccc = "dadasd"/>
+<wxs src="../aaa/bbb.wxs" module="test"></wxs>
+<Component ></Component>
+<cover-view MyName="oks" data-urlMap="something" bindtap="fn" catch:aaa="ok" />
+<view>
+  <aaa name="ok" wx:if="false" wx:for>
+    wx:if = "ok;a";
+    <cover-view MyName="oks" data-urlMap="something" bindtap="fn" catch:aaa="ok" />
+  </aaa>
+  <wxs module="dadsad" wx:if="ok" wx:else="ooo">
+    var aaa = require('../a');
+    module.exports = {
+    aaa: 1
+    }
+  </wxs>
+</view>

@@ -1,0 +1,8 @@
+{
+    "usingComponents": {
+        "login": "@miniprogram/login",
+        "login2": "@miniprogram/login/index",
+        "sms": "@miniprogram/login/sms",
+        "normal": "../components/demo"
+    }
+}
