@@ -6,7 +6,7 @@ import through2 from 'through2';
 import { genNpmDir, supportedPlatforms, wxssSuffixes, wxmlSuffixes, wxsSuffixes } from './config';
 
 function filterPlatformFiles(ext) {
-    const files = new Map();
+    const files = {};
 
     const endsWith = (str, haystack) => str.indexOf(haystack) === str.length - haystack.length;
     const getPlatformExt = p => `.${p}.${ext}`;
@@ -27,18 +27,18 @@ function filterPlatformFiles(ext) {
             const idx = filepath.indexOf(platformExt);
             filepath = `${filepath.slice(0, idx)}.${ext}`;
             file.path = filepath;
-        } else if (files.has(filepath)) {
+        } else if (filepath in files) {
             cb();
             return;
         };
 
-        files.set(filepath, file);
+        files[filepath] = file;
         cb();
     }
 
     function flush(cb) {
-        for (const [, file] of files) {
-            this.push(file);
+        for (const filepath in files) {
+            this.push(files[filepath]);
         }
         cb();
     }
@@ -83,4 +83,16 @@ export function globExt(ext) {
 
 export function replaceNodeModulesPath(filepath) {
     return filepath.replace(/(?<=\/)node_modules(?=\/)/, genNpmDir);
+}
+
+export function normalizeRelativePath(p) {
+    if (p.indexOf("..") !== 0 && p.indexOf("./") !== 0) {
+        p = "./" + p;
+    }
+
+    return p;
+}
+
+export function getRelativePath(from, to) {
+    return normalizeRelativePath(path.relative(path.dirname(from), to));
 }

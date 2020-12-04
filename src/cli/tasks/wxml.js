@@ -6,7 +6,8 @@ import { transformSync } from "@babel/core";
 import babelTransformCommonjs from "babel-plugin-transform-commonjs";
 import { wxmlDirectivePrefixes, genWxsDir, isAlipay, wxsSuffixes, wxsTags } from "../config";
 import { options } from '../options';
-import { globExt } from "../utils";
+import { globExt, normalizeRelativePath } from "../utils";
+import { wxmlSuffixes } from "../config";
 
 /**
  * 将内联的wxs代码抽出到外部文件
@@ -156,6 +157,18 @@ function transformDataset(elems) {
     }
 }
 
+/**
+ * 替换data-属性
+ */
+function transformImportPath($) {
+    $("import, include").each((_, n) => {
+        n = cheerio(n);
+        const src = n.attr("src");
+        const newSrc = normalizeRelativePath(src.replace(/\.wxml$/, wxmlSuffixes[options.platform]));
+        n.attr("src", newSrc);
+    });
+}
+
 export function transformWxml() {
     return globExt('wxml')
         .pipe(through2.obj(function (file, enc, callback) {
@@ -176,6 +189,7 @@ export function transformWxml() {
             }
             transformDirective(children);
             transformWxs($);
+            transformImportPath($);
 
             file.contents = Buffer.from($.html());
             this.push(file);

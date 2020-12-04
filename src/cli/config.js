@@ -1,4 +1,4 @@
-import { options } from "../../lib/cli/options";
+import { options } from "./options";
 
 export const supportedPlatforms = ["alipay", "baidu", "bytedance"];
 

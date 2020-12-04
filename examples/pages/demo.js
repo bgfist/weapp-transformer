@@ -1,4 +1,8 @@
 import dada from "someUrl";
+import _ from "lodash";
+
+
+const lodash = require("lodash");
 
 wx.addCard();
 

@@ -3,6 +3,9 @@ import babel from 'gulp-babel';
 import path from "path";
 import { globExt } from '../utils';
 import babelTransformWxApi from '../../babel-plugin/transform-wx-api';
+import babelTransformWxComponent from '../../babel-plugin/transform-wx-component';
+import babelTransformWxBehavior from '../../babel-plugin/transform-wx-behavior';
+import babelTransformNpmPath from '../../babel-plugin/transform-npm-path';
 import { options } from '../options';
 import { genSdkDir, isAlipay, jsApiPrefixes } from '../config';
 import through2 from 'through2';
@@ -29,8 +32,9 @@ export function transformJs() {
             babel({
                 plugins: [
                     [babelTransformWxApi, { namespace: jsApiPrefixes[options.platform] }],
-                    // babelTransformWxComponent,
-                    // babelTransformNpmPath
+                    babelTransformWxComponent,
+                    babelTransformWxBehavior,
+                    babelTransformNpmPath
                 ],
                 configFile: false,
                 retainLines: true

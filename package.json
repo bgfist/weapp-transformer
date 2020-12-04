@@ -1,6 +1,6 @@
 {
   "name": "mc_transformer",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "description": "",
   "bin": {
     "mc_transformer": "bin/ast_transformer.js"
@@ -25,9 +25,11 @@
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-if": "^3.0.0",
+    "gulp-postcss": "^9.0.0",
     "gulp-rename": "^2.0.0",
     "gulp-replace": "^1.0.0",
     "mini-types": "^0.1.4",
+    "postcss": "^8.1.14",
     "rollup": "^2.33.3",
     "through2": "^2.0.5"
   }

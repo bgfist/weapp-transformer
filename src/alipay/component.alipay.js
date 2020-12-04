@@ -1,9 +1,10 @@
 /**
  * 让支付宝的Component写法与微信保持统一
  */
+export default function MCComponent(options) {
+  options = normalizeOptions(options);
 
-export function MCComponent(options) {
-  const { created: onInit, attached, ready, detached: didUnmount, properties: props, observers, methods = {}, ...extra } = options;
+  const { created: onInit, attached, ready, detached: didUnmount, properties: props, observers, methods = {}, behaviours = [], ...extra } = options;
 
   for (const k in props) {
     if (typeof props[k] === "object") {
@@ -65,4 +66,49 @@ export function MCComponent(options) {
     methods,
     ...extra
   });
+}
+
+function normalizeOptions(options) {
+  const hooks = {};
+  const object = {};
+  mixinBehaviors(options, object, hooks);
+
+  function makeHook(name) {
+    return function (...args) {
+      hooks[name].forEach(hook => hook.apply(this, args));
+    }
+  }
+
+  for (const k in hooks) {
+    hooks[k] = makeHook(k);
+  }
+
+  return {
+    ...object,
+    ...hooks
+  }
+}
+
+function mixinBehaviors(options, object, queue) {
+  const { behaviours } = options;
+
+  if (behaviours) {
+    behaviours.map(behavior => mixinBehaviors(behavior, object, queue));
+  }
+
+  for (const k in options) {
+    const v = options[k];
+
+    if (typeof v === 'function') {
+      if (!queue[k]) {
+        queue[k] = [];
+      }
+      queue[k].unshift(v);
+    } else {
+      if (!object[k]) {
+        object[k] = {};
+      }
+      Object.assign(object[k], v);
+    }
+  }
 }
