@@ -9,6 +9,11 @@ import { options } from '../options';
 import { globExt, normalizeRelativePath } from "../utils";
 import { wxmlSuffixes } from "../config";
 
+let uid = 0;
+function genFileName() {
+    return uid++;
+}
+
 /**
  * 将内联的wxs代码抽出到外部文件
  */
@@ -23,11 +28,14 @@ function extractInlineWxs($, file) {
             return;
         }
 
-        const moduleName = n.attr('module');
-        const filename = file.basename.slice(0, -5);
+
         const vinyl = file.clone({ contents: false });
-        vinyl.path = path.join(vinyl.base, genWxsDir, vinyl.relative);
-        vinyl.basename = `${filename}_${moduleName}${wxsSuffixes[options.platform]}`;
+
+        vinyl.path = path.join(vinyl.base, genWxsDir, `${genFileName() + wxsSuffixes[options.platform]}`);
+        // const moduleName = n.attr('module');
+        // const filename = file.basename.slice(0, -5);
+        // vinyl.path = path.join(vinyl.base, genWxsDir, vinyl.relative);
+        // vinyl.basename = `${filename}_${moduleName}${wxsSuffixes[options.platform]}`;
 
         const content = transformSync(code, {
             plugins: [babelTransformCommonjs],
@@ -54,7 +62,11 @@ function transformWxs($) {
         n.name = wxsTags[options.platform];
         n = cheerio(n);
 
-        const src = n.attr("src").replace(/\.wxs$/, wxsSuffixes[options.platform]);
+        let src = n.attr("src");
+        if (!src) {
+            return;
+        }
+        src = src.replace(/\.wxs$/, wxsSuffixes[options.platform]);
 
         if (isAlipay()) {
             const module = n.attr("module");

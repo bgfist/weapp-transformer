@@ -84,3 +84,8 @@ mc_transformer src --platform bytedance
 1. beta版本不支持sjs语法，用稳定版（文档有误）
 2. 自定义组件只支持属性的监听observer，不支持observers
 3. npm模块构建有问题
+
+## TODU
+
+1. wxml标签转换有问题，wx:else，属性的引号问题
+2. 支付宝sjs模块语法报错

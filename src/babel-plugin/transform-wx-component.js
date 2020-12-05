@@ -5,7 +5,7 @@ import { genSdkDir } from "../cli/config";
 import { getRelativePath, normalizeRelativePath } from "../cli/utils";
 
 export default function ({ types: t }, _, dirname) {
-    const sdkPath = path.resolve(options.src, genSdkDir, `component.${options.platform}.js`);
+    const sdkPath = path.resolve(options.src, genSdkDir, `component.js`);
 
     return {
         name: "transform-wx-component",

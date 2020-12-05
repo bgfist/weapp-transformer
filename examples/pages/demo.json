@@ -1,8 +1,6 @@
 {
     "usingComponents": {
-        "login": "@miniprogram/login",
-        "login2": "@miniprogram/login/index",
-        "sms": "@miniprogram/login/sms",
+        "badge": "weui-miniprogram/badge/badge",
         "normal": "../components/demo"
     }
 }

@@ -1,7 +1,7 @@
 import gulp from 'gulp';
 import babel from 'gulp-babel';
 import path from "path";
-import { globExt } from '../utils';
+import { getRelativePath, globExt } from '../utils';
 import babelTransformWxApi from '../../babel-plugin/transform-wx-api';
 import babelTransformWxComponent from '../../babel-plugin/transform-wx-component';
 import babelTransformWxBehavior from '../../babel-plugin/transform-wx-behavior';
@@ -18,7 +18,8 @@ function insertPolyfill() {
         }
 
         if (file.path === path.resolve(options.src, "app.js")) {
-            const polyfillRelative = `./${genSdkDir}/polyfill.${options.platform}.js`;
+            const polyfillPath = path.resolve(options.src, genSdkDir, 'polyfill.js');
+            const polyfillRelative = getRelativePath(file.path, polyfillPath);
             file.contents = Buffer.from(`import "${polyfillRelative}";\n${String(file.contents)}`);
         }
 
@@ -32,10 +33,10 @@ export function transformJs() {
             babel({
                 plugins: [
                     [babelTransformWxApi, { namespace: jsApiPrefixes[options.platform] }],
-                    babelTransformWxComponent,
-                    babelTransformWxBehavior,
+                    isAlipay() && babelTransformWxComponent,
+                    isAlipay() && babelTransformWxBehavior,
                     babelTransformNpmPath
-                ],
+                ].filter(Boolean),
                 configFile: false,
                 retainLines: true
             })
@@ -45,7 +46,7 @@ export function transformJs() {
 }
 
 export function copySdk() {
-    const sdkPath = path.resolve(__dirname, "../../", options.platform);
+    const sdkPath = path.resolve(__dirname, "../../sdk", options.platform);
     const sdkDestPath = path.join(options.dist, genSdkDir);
 
     return gulp.src("**/*", { base: sdkPath, cwd: sdkPath }).pipe(

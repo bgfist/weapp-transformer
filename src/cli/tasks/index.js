@@ -2,6 +2,7 @@ import gulp from 'gulp';
 import { copySdk, transformJs } from './js';
 import { transformJson } from './json';
 import { bundleNpm } from './npm';
+import { copyOthers } from './others';
 import { transformWxml } from './wxml';
 import { transformWxs } from './wxs';
 import { transformWxss } from './wxss';
@@ -14,7 +15,8 @@ export function build(cb) {
         transformJs,
         transformWxs,
         transformWxss,
-        transformJson
+        transformJson,
+        copyOthers
     )(cb);
 }
 

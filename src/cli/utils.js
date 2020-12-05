@@ -81,6 +81,24 @@ export function globExt(ext) {
         .pipe(renameExt());
 }
 
+export function globOthers() {
+    const pattern = '**/*';
+
+    return gulp.src([
+        pattern,
+        '!' + path.join(options.distBase, "**"),
+        '!miniprogram_npm/**',
+        '!node_modules/**',
+        ...Object.keys(componentModules).map(moduleName => path.join('node_modules', moduleName, pattern)),
+        '!**/*.js',
+        '!**/*.wxs',
+        '!**/*.json',
+        '!**/*.wxss',
+        '!**/*.wxml',
+    ], { base: options.src, cwd: options.src })
+        .pipe(renameNodeModules())
+}
+
 export function replaceNodeModulesPath(filepath) {
     return filepath.replace(/(?<=\/)node_modules(?=\/)/, genNpmDir);
 }

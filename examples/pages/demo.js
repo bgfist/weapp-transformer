@@ -18,3 +18,7 @@ function test() {
 
     return wx + 100;
 }
+
+Page({
+
+});

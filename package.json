@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "",
   "bin": {
-    "mc_transformer": "bin/ast_transformer.js"
+    "mc_transformer": "bin/mc_transformer.js"
   },
   "main": "index.js",
   "keywords": [],
@@ -11,7 +11,7 @@
   "license": "ISC",
   "scripts": {
     "build": "babel src -d lib",
-    "transform": "npm run build && ./bin/ast_transform.js examples -p alipay"
+    "transform": "npm run build && ./bin/mc_transformer.js examples -p alipay"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.8",

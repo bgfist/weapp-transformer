@@ -1,3 +1,5 @@
-
-
-Component({});
+Component({
+    created() {
+        console.log('component');
+    }
+});
