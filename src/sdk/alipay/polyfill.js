@@ -82,3 +82,7 @@ my.getUserInfo = function (options) {
         }
     })
 }
+
+my.onPageNotFound = function () {
+    // TODO
+}

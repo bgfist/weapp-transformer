@@ -74,8 +74,9 @@ function normalizeOptions(options) {
   mixinBehaviors(options, object, hooks);
 
   function makeHook(name) {
+    const hookFns = hooks[name];
     return function (...args) {
-      hooks[name].forEach(hook => hook.apply(this, args));
+      hookFns.forEach(hook => hook.apply(this, args));
     }
   }
 

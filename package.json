@@ -17,6 +17,7 @@
     "@babel/cli": "^7.12.8",
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.7",
+    "@rollup/plugin-babel": "^5.2.2",
     "@rollup/plugin-commonjs": "^17.0.0",
     "@types/quickapp": "git+https://github.com/vivoquickapp/quickapp-types.git",
     "@types/wechat-miniprogram": "^3.1.0",

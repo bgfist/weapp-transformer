@@ -2,8 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import * as rollup from 'rollup';
 import commonjs from '@rollup/plugin-commonjs';
+import babel from '@rollup/plugin-babel';
+import babelTransformWxApi from '../../babel-plugin/transform-wx-api';
 import { options } from '../options';
-import { genNpmDir } from '../config';
+import { genNpmDir, jsApiPrefixes } from '../config';
 
 export const npmModules = {};
 export const componentModules = {};
@@ -35,7 +37,12 @@ export function splitNodeModules() {
     }
 }
 
-export function bundleNpm() {
+export function bundleNpm(cb) {
+    if (Object.keys(npmModules).length === 0) {
+        cb();
+        return;
+    }
+
     function appendIndex(input) {
         const ret = {};
         for (const entry in input) {
@@ -46,7 +53,17 @@ export function bundleNpm() {
 
     return rollup.rollup({
         input: appendIndex(npmModules),
-        plugins: [commonjs()],
+        plugins: [
+            commonjs(),
+            babel({
+                configFile: false,
+                retainLines: true,
+                babelHelpers: 'bundled',
+                plugins: [
+                    [babelTransformWxApi, { namespace: jsApiPrefixes[options.platform] }]
+                ],
+            })
+        ]
     }).then(bundle => {
         bundle.write({
             output: {

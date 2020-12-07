@@ -104,6 +104,10 @@ export function replaceNodeModulesPath(filepath) {
 }
 
 export function normalizeRelativePath(p) {
+    if (path.isAbsolute(p)) {
+        return p;
+    }
+
     if (p.indexOf("..") !== 0 && p.indexOf("./") !== 0) {
         p = "./" + p;
     }

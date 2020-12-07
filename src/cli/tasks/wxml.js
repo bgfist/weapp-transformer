@@ -95,7 +95,8 @@ function transformDirective(elems) {
         const newAttrs = {};
 
         for (let attr in oldAttrs) {
-            const value = oldAttrs[attr];
+            // 将双引号改为单引号
+            const value = oldAttrs[attr].replace(/"/g, "'");
             if (attr.indexOf("wx:") === 0) {
                 attr = wxmlDirectivePrefixes[options.platform] + attr.slice(3);
             }
@@ -189,7 +190,13 @@ export function transformWxml() {
                 return;
             }
 
-            const $ = cheerio.load(String(file.contents), { xmlMode: true, decodeEntities: false });
+            const $ = cheerio.load(String(file.contents), {
+                _useHtmlParser2: true,
+                recognizeSelfClosing: true,
+                decodeEntities: false,
+                lowerCaseTags: false,
+                lowerCaseAttributeNames: false
+            }, false);
             const children = $.root().children();
 
             if (isAlipay()) {
@@ -203,7 +210,7 @@ export function transformWxml() {
             transformWxs($);
             transformImportPath($);
 
-            file.contents = Buffer.from($.html());
+            file.contents = Buffer.from($.html({ decodeEntities: false }));
             this.push(file);
 
             callback();
