@@ -116,5 +116,6 @@ export function normalizeRelativePath(p) {
 }
 
 export function getRelativePath(from, to) {
-    return normalizeRelativePath(path.relative(path.dirname(from), to));
+    const relativePath = path.relative(path.dirname(from), to).replace('\\', '/')
+    return normalizeRelativePath(relativePath);
 }

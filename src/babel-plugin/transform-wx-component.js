@@ -2,7 +2,7 @@ import path from "path";
 import { addDefault } from "@babel/helper-module-imports";
 import { options } from "../cli/options";
 import { genSdkDir } from "../cli/config";
-import { getRelativePath, normalizeRelativePath } from "../cli/utils";
+import { getRelativePath } from "../cli/utils";
 
 export default function ({ types: t }, _, dirname) {
     const sdkPath = path.resolve(options.src, genSdkDir, `component.js`);
