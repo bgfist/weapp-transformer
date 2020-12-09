@@ -37,9 +37,18 @@ function filterPlatformFiles(ext) {
     }
 
     function flush(cb) {
+        // trick, 先遍历app.json, 方便继承其配置
+        const appJsonPath = getAppJsonPath();
+        const appJsonFile = files[appJsonPath];
+        if (appJsonFile) {
+            delete files[appJsonPath];
+            this.push(appJsonFile);
+        }
+
         for (const filepath in files) {
             this.push(files[filepath]);
         }
+
         cb();
     }
 
@@ -48,7 +57,7 @@ function filterPlatformFiles(ext) {
 
 function renameNodeModules() {
     return through2.obj(function (file, enc, cb) {
-        file.path = replaceNodeModulesPath(file.path);
+        file.path = replaceNodeModulesPath(file.path, file);
         cb(null, file);
     });
 }
@@ -99,8 +108,13 @@ export function globOthers() {
         .pipe(renameNodeModules())
 }
 
-export function replaceNodeModulesPath(filepath) {
-    return filepath.replace(/(?<=\/)node_modules(?=\/)/, genNpmDir);
+export function replaceNodeModulesPath(filepath, file) {
+    return filepath.replace(/(?<=\/)node_modules(?=\/)/, () => {
+        if (file) {
+            file.isNpm = true
+        }
+        return genNpmDir
+    });
 }
 
 export function normalizeRelativePath(p) {
@@ -118,4 +132,12 @@ export function normalizeRelativePath(p) {
 export function getRelativePath(from, to) {
     const relativePath = path.relative(path.dirname(from), to).replace(/\\/g, '/')
     return normalizeRelativePath(relativePath);
+}
+
+export function getAppJsonPath() {
+    return path.resolve(options.src, 'app.json')
+}
+
+export function startWith(str, haystack) {
+    return str.indexOf(haystack) === 0
 }

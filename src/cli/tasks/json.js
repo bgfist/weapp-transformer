@@ -1,7 +1,7 @@
 import path from "path";
 import gulp from 'gulp';
 import { options } from "../options"
-import { globExt, replaceNodeModulesPath } from '../utils';
+import { getAppJsonPath, getRelativePath, globExt, replaceNodeModulesPath } from '../utils';
 import through2 from 'through2';
 import { isAlipay } from "../config";
 import { componentModules } from "./npm";
@@ -53,7 +53,7 @@ function transformWindowSetting(json) {
 }
 
 function transformUsingComponents(json, file) {
-    const usingComponents = json.usingComponents;
+    let usingComponents = json.usingComponents;
     for (const name in usingComponents) {
         const compPath = usingComponents[name];
 
@@ -67,10 +67,38 @@ function transformUsingComponents(json, file) {
             if (compPath.indexOf(module) === 0) {
                 const innerPath = compPath.substring(module.length + 1);
                 const newCompPath = replaceNodeModulesPath(path.resolve(componentModules[module], innerPath));
-                usingComponents[name] = path.relative(path.dirname(file.path), newCompPath);
+                usingComponents[name] = getRelativePath(file.path, newCompPath);
             }
         }
     }
+
+    // node_modules里的不继承全局组件
+    if (file.isNpm) {
+        return;
+    }
+
+    for (const name in globalComponents) {
+        if (!usingComponents) {
+            usingComponents = json.usingComponents = {}
+        }
+        if (!(name in usingComponents)) {
+            let compPath = globalComponents[name];
+
+            if (!path.isAbsolute(compPath)) {
+                compPath = getRelativePath(file.path, path.resolve(getAppJsonPath(), '..', compPath));
+            }
+
+            usingComponents[name] = compPath;
+        }
+    }
+}
+
+let globalComponents = null
+/**
+ * 将app.json里注册的全局组件加到页面里去
+ */
+function inheritGlobalComponents(json) {
+    globalComponents = json.usingComponents
 }
 
 export function transformJson() {
@@ -83,17 +111,19 @@ export function transformJson() {
 
             const json = JSON.parse(String(file.contents));
 
+            const isAppJson = file.path === getAppJsonPath();
+
+            transformUsingComponents(json, file);
+
             if (isAlipay()) {
-                // 处理app.json
-                if (file.path === path.resolve(options.src, 'app.json')) {
+                if (isAppJson) {
+                    inheritGlobalComponents(json, file);
                     transformAppTabBar(json);
                     transformWindowSetting(json.window);
                 } else {
                     transformWindowSetting(json);
                 }
             }
-
-            transformUsingComponents(json, file);
 
             file.contents = Buffer.from(JSON.stringify(json, null, 4));
             cb(null, file);
