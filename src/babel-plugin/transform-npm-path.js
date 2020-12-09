@@ -8,7 +8,7 @@ export default function declare({ types: t }, _, dirname) {
 
     function getRealPath(p, filepath) {
         if (p in npmModules) {
-            const npmBundlePath = path.resolve(options.src, genNpmDir, p);
+            const npmBundlePath = path.resolve(options.src, genNpmDir, p, 'index.js');
             p = getRelativePath(filepath, npmBundlePath);
         }
 

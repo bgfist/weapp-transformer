@@ -65,6 +65,7 @@ mc_transformer src --p bytedance
 
 1. `data-` 属性必须全部转成小写形式，因为微信会自动转，但支付宝不会。如：`data-urlMap` -> `data-urlmap` （mc_transformer也会帮你转）
 2. 注意一些异步api的调用，涉及到`page`的加载时机和执行时机。
+3. 组件里引用图片资源如果是相对路径，会有bug，建议用绝对路径
 
 ### 百度
 

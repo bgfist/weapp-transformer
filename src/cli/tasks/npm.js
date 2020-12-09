@@ -31,7 +31,7 @@ export function splitNodeModules() {
             const componentIndexPath = path.resolve(packageJsonPath, '..', packageJson.miniprogram);
             componentModules[nodeModule] = componentIndexPath;
         } else {
-            const npmIndexPath = path.resolve(packageJsonPath, '..', packageJson.main || "index");
+            const npmIndexPath = path.resolve(packageJsonPath, '..', packageJson.main || "index.js");
             npmModules[nodeModule] = npmIndexPath;
         }
     }
