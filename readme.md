@@ -13,7 +13,7 @@
 npm install -D mc_transformer
 ```
 
-将 src 目录(微信小程序的源码，含project.json) 转成支付宝小程序：
+将 src 目录(微信小程序的源码，含app.json) 转成支付宝小程序：
 ```sh
 mc_transformer src -p alipay
 ```
