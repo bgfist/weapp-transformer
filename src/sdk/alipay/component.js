@@ -2,15 +2,32 @@
  * 让支付宝的Component写法与微信保持统一
  */
 export default function MCComponent(options) {
-  options = normalizeOptions(options);
+  options = polyfillMixin(options);
 
-  const { created: onInit, attached, ready, detached: didUnmount, properties: props, observers, methods = {}, behaviours = [], ...extra } = options;
+  const {
+    created: onInit,
+    attached,
+    ready,
+    detached: didUnmount,
+    properties,
+    observers = {},
+    methods = {},
+    behaviours,
+    ...extra
+  } = options;
 
-  for (const k in props) {
-    if (typeof props[k] === "object") {
-      props[k] = props[k].value;
-    } else {
-      delete props[k];
+  const props = {}
+  for (const k in properties) {
+    if (typeof properties[k] === "object") {
+      const property = properties[k]
+      if ('value' in property) {
+        props[k] = property.value
+      }
+      if (typeof property.observer === 'function') {
+        observers[k] = property.observer
+      } else if (typeof property.observer === 'string') {
+        observers[k] = methods[property.observer]
+      }
     }
   }
 
@@ -54,7 +71,7 @@ export default function MCComponent(options) {
     handler && handler({ detail: data });
   };
 
-  return Component({
+  options = {
     onInit,
     didMount() {
       attached && attached.call(this);
@@ -65,13 +82,21 @@ export default function MCComponent(options) {
     props,
     methods,
     ...extra
-  });
+  };
+
+  polyfillThis(options);
+
+  return Component(options);
 }
 
-function normalizeOptions(options) {
+function polyfillMixin(options) {
+  if (!options.behaviours) {
+    return options;
+  }
+
   const hooks = {};
   const object = {};
-  mixinBehaviors(options, object, hooks);
+  collectBehavior(options, object, hooks);
 
   function makeHook(name) {
     const hookFns = hooks[name];
@@ -90,11 +115,11 @@ function normalizeOptions(options) {
   }
 }
 
-function mixinBehaviors(options, object, queue) {
+function collectBehavior(options, object, queue) {
   const { behaviours } = options;
 
   if (behaviours) {
-    behaviours.map(behavior => mixinBehaviors(behavior, object, queue));
+    behaviours.map(behavior => collectBehavior(behavior, object, queue));
   }
 
   for (const k in options) {
@@ -111,5 +136,42 @@ function mixinBehaviors(options, object, queue) {
       }
       Object.assign(object[k], v);
     }
+  }
+}
+
+function polyfillThis(options) {
+  for (const k in options) {
+    const option = options[k];
+
+    if (typeof option === 'object' && option) {
+      polyfillThis(option)
+    } else if (typeof option === 'function') {
+      options[k] = bindThis(option)
+    }
+  }
+}
+
+function bindThis(fn) {
+  return function (...args) {
+    const self = this;
+    const instance = Object.create(self);
+
+    Object.defineProperties(instance, {
+      'properties': {
+        get() {
+          return self.props;
+        }
+      },
+      'data': {
+        get() {
+          return {
+            ...self.props,
+            ...self.data
+          }
+        }
+      }
+    })
+
+    return fn.apply(instance, args);
   }
 }
