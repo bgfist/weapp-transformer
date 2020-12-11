@@ -109,10 +109,43 @@ function transformDirective(elems) {
     }
 }
 
+const uppperCaseEventNames = {
+    "touchmove": "TouchMove",
+    "touchstart": "TouchStart",
+    "touchend": "TouchEnd",
+    "touchcancel": "TouchCancel",
+    "longtap": "LongTap",
+    "transitionend": "TransitionEnd",
+    "animationiteration": "AnimationIteration",
+    "animationiteration": "AnimationIteration",
+    "animationstart": "AnimationStart",
+    "animationend": "AnimationEnd",
+    "scrolltoupper": "ScrollToUpper",
+    "scrolltolower": "ScrollToLower",
+    "changeend": "ChangeEnd",
+    "timeupdate": "TimeUpdate",
+    "fullscreenchange": "FullScreenChange",
+    "useraction": "UserAction",
+    "renderstart": "RenderStart",
+    "markertap": "MarkerTap",
+    "callouttap": "CalloutTap",
+    "controltap": "ControlTap",
+    "regionchange": "RegionChange",
+    "paneltap": "PanelTap"
+}
+
 /**
  * 替换事件绑定
  */
 function transformEventBind(elems) {
+    const getEventName = (event) => {
+        const upperCaseEventName = uppperCaseEventNames[event.toLowerCase()];
+        if (upperCaseEventName) {
+            return upperCaseEventName;
+        }
+        return event[0].toUpperCase() + event.slice(1);
+    }
+
     for (let i = 0; i < elems.length; i++) {
         const n = elems[i];
 
@@ -127,11 +160,12 @@ function transformEventBind(elems) {
             const value = oldAttrs[attr];
             if (attr.indexOf("bind") === 0) {
                 const event = attr[4] === ':' ? attr.slice(5) : attr.slice(4);
-                attr = "on" + event[0].toUpperCase() + event.slice(1);
+
+                attr = "on" + getEventName(event);
             }
             else if (attr.indexOf("catch") === 0) {
                 const event = attr[5] === ':' ? attr.slice(6) : attr.slice(5);
-                attr = "catch" + event[0].toUpperCase() + event.slice(1);
+                attr = "catch" + getEventName(event);
             }
             newAttrs[attr] = value;
         }
