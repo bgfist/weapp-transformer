@@ -10,15 +10,18 @@ export default function MCComponent(options) {
     ready,
     detached: didUnmount,
     properties,
+    data,
     observers = {},
     methods = {},
     behaviours,
-
+    
     // ignored options
-    options: _,
-    relations,
+    moved,
+    error,
     lifetimes,
     pageLifetimes,
+    options: _,
+    relations,
     externalClasses,
     definitionFilter,
 
@@ -82,6 +85,7 @@ export default function MCComponent(options) {
     },
     didUnmount,
     didUpdate,
+    data,
     props,
     methods,
     ...extra
