@@ -13,6 +13,15 @@ export default function MCComponent(options) {
     observers = {},
     methods = {},
     behaviours,
+
+    // ignored options
+    options: _,
+    relations,
+    lifetimes,
+    pageLifetimes,
+    externalClasses,
+    definitionFilter,
+
     ...extra
   } = options;
 
@@ -78,7 +87,7 @@ export default function MCComponent(options) {
     ...extra
   };
 
-  polyfillThis(options);
+  polyfillThis(options, extra);
 
   return Component(options);
 }
@@ -139,11 +148,22 @@ function polyfillMixin(options) {
 /**
  * 给component实例注入一些属性和方法
  */
-function polyfillThis(options) {
+function polyfillThis(options, extra) {
   function bindThis(fn) {
     return function (...args) {
       const self = this;
       const instance = Object.create(self);
+
+      for (const k in extra) {
+        Object.defineProperty(instance, k, {
+          get() {
+            return extra[k];
+          },
+          set(v) {
+            extra[k] = v;
+          }
+        });
+      }
 
       Object.defineProperties(instance, {
         'properties': {
@@ -182,7 +202,7 @@ function polyfillThis(options) {
     const option = options[k];
 
     if (typeof option === 'object' && option) {
-      polyfillThis(option);
+      polyfillThis(option, extra);
     } else if (typeof option === 'function') {
       options[k] = bindThis(option);
     }
