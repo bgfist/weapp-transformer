@@ -65,12 +65,6 @@ export default function MCComponent(options) {
     }
   }
 
-  methods.triggerEvent = function (eventName, data, options) {
-    eventName = eventName[0].toUpperCase() + eventName.slice(1);
-    const handler = this.props["on" + eventName] || this.props["catch" + eventName];
-    handler && handler({ detail: data });
-  };
-
   options = {
     onInit,
     didMount() {
@@ -89,14 +83,38 @@ export default function MCComponent(options) {
   return Component(options);
 }
 
+/**
+ * 处理Behavior
+ * TODO: 可用mixins配置代替？
+ */
 function polyfillMixin(options) {
   if (!options.behaviours) {
     return options;
   }
 
-  const hooks = {};
-  const object = {};
-  collectBehavior(options, object, hooks);
+  function collectBehavior(options, object, queue) {
+    const { behaviours } = options;
+
+    if (behaviours) {
+      behaviours.map(behavior => collectBehavior(behavior, object, queue));
+    }
+
+    for (const k in options) {
+      const v = options[k];
+
+      if (typeof v === 'function') {
+        if (!queue[k]) {
+          queue[k] = [];
+        }
+        queue[k].unshift(v);
+      } else {
+        if (!object[k]) {
+          object[k] = {};
+        }
+        Object.assign(object[k], v);
+      }
+    }
+  }
 
   function makeHook(name) {
     const hookFns = hooks[name];
@@ -105,6 +123,9 @@ function polyfillMixin(options) {
     }
   }
 
+  const hooks = {};
+  const object = {};
+  collectBehavior(options, object, hooks);
   for (const k in hooks) {
     hooks[k] = makeHook(k);
   }
@@ -115,63 +136,55 @@ function polyfillMixin(options) {
   }
 }
 
-function collectBehavior(options, object, queue) {
-  const { behaviours } = options;
+/**
+ * 给component实例注入一些属性和方法
+ */
+function polyfillThis(options) {
+  function bindThis(fn) {
+    return function (...args) {
+      const self = this;
+      const instance = Object.create(self);
 
-  if (behaviours) {
-    behaviours.map(behavior => collectBehavior(behavior, object, queue));
-  }
+      Object.defineProperties(instance, {
+        'properties': {
+          get() {
+            return {
+              ...self.props,
+              ...self.data
+            };
+          }
+        },
+        'data': {
+          get() {
+            return {
+              ...self.props,
+              ...self.data
+            };
+          }
+        },
+        'triggerEvent': {
+          value: function (eventName, data, options) {
+            eventName = eventName[0].toUpperCase() + eventName.slice(1);
+            const handler = this.props["on" + eventName] || this.props["catch" + eventName];
+            handler && handler({ detail: data });
+          }
+        },
+        'createSelectorQuery': {
+          value: my.createSelectorQuery
+        }
+      });
 
-  for (const k in options) {
-    const v = options[k];
-
-    if (typeof v === 'function') {
-      if (!queue[k]) {
-        queue[k] = [];
-      }
-      queue[k].unshift(v);
-    } else {
-      if (!object[k]) {
-        object[k] = {};
-      }
-      Object.assign(object[k], v);
+      return fn.apply(instance, args);
     }
   }
-}
 
-function polyfillThis(options) {
   for (const k in options) {
     const option = options[k];
 
     if (typeof option === 'object' && option) {
-      polyfillThis(option)
+      polyfillThis(option);
     } else if (typeof option === 'function') {
-      options[k] = bindThis(option)
+      options[k] = bindThis(option);
     }
-  }
-}
-
-function bindThis(fn) {
-  return function (...args) {
-    const self = this;
-    const instance = Object.create(self);
-
-    Object.defineProperties(instance, {
-      'properties': {
-        get() {
-          return self.props;
-        }
-      },
-      'data': {
-        get() {
-          return {
-            ...self.props,
-            ...self.data
-          }
-        }
-      }
-    })
-
-    return fn.apply(instance, args);
   }
 }
