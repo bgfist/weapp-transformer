@@ -90,3 +90,5 @@ my.onPageNotFound = function () {
 my.nextTick = function (cb) {
     setTimeout(cb)
 }
+
+my.setNavigationBarTitle = my.setNavigationBar
