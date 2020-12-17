@@ -92,3 +92,19 @@ my.nextTick = function (cb) {
 }
 
 my.setNavigationBarTitle = my.setNavigationBar
+
+const request = my.request
+
+my.request = function (options) {
+    const { header: headers, success, ...extra } = options
+    return request.call(my, {
+        headers,
+        success({ header: headers, ...extra }) {
+            return success && success.call(this, {
+                headers,
+                ...extra
+            })
+        },
+        ...extra
+    })
+}
