@@ -82,6 +82,7 @@ export default function MCComponent(options) {
     didMount() {
       attached && attached.call(this);
       ready && ready.call(this);
+      didUpdate.call(this, {}, data);
     },
     didUnmount,
     didUpdate,
