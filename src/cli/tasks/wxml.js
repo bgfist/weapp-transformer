@@ -6,7 +6,7 @@ import { transformSync } from "@babel/core";
 import babelTransformCommonjs from "babel-plugin-transform-commonjs";
 import { wxmlDirectivePrefixes, genWxsDir, isAlipay, wxsSuffixes, wxsTags } from "../config";
 import { options } from '../options';
-import { globExt, normalizeRelativePath } from "../utils";
+import { getRelativePath, globExt, normalizeRelativePath } from "../utils";
 import { wxmlSuffixes } from "../config";
 
 let uid = 0;
@@ -45,7 +45,7 @@ function extractInlineWxs($, file) {
 
         vinyl.contents = Buffer.from(content);
 
-        n.attr('src', path.relative(path.dirname(file.path), vinyl.path));
+        n.attr('src', getRelativePath(file.path, vinyl.path));
         n.text('');
 
         genFiles.push(vinyl);
