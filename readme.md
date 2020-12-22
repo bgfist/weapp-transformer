@@ -25,11 +25,6 @@ mc_transformer src -p alipay
 mc_transformer src -o build -p alipay
 ```
 
-监听文件变化实时编译：
-```sh
-mc_transformer src --watch
-```
-
 转成百度小程序：
 ```sh
 mc_transformer src --p baidu
@@ -63,9 +58,12 @@ mc_transformer src --p bytedance
 
 平台差异较大，主要是Component构造器写法不同，及事件机制不同。
 
-1. `data-` 属性必须全部转成小写形式，因为微信会自动转，但支付宝不会。如：`data-urlMap` -> `data-urlmap` （mc_transformer也会帮你转）
-2. 注意一些异步api的调用，涉及到`page`的加载时机和执行时机。
-3. 组件里引用图片资源如果是相对路径，会有bug，建议用绝对路径
+1. 组件必须采用component2编译
+2. `data-` 属性必须全部转成小写形式，因为微信会自动转，但支付宝不会。如：`data-urlMap` -> `data-urlmap` （mc_transformer也会帮你转）
+3. 注意一些异步api的调用，涉及到`page`的加载时机和执行时机。
+4. 组件里引用图片资源如果是相对路径，会有bug，建议用绝对路径。
+5. props和data里不要有相同的字段名，支付宝不支持
+6. 支付宝的组件样式未全局隔离，需要手动隔离
 
 ### 百度
 
@@ -76,9 +74,6 @@ mc_transformer src --p bytedance
 
 1. beta版本不支持sjs语法，用稳定版（文档有误）
 2. 自定义组件只支持属性的监听observer，不支持observers
-3. npm模块构建有问题（让mc_transformer帮你构建就好）
+3. npm模块构建有问题（mc_transformer会帮你构建）
 
 
-## TODO
-
-1. component 重构
