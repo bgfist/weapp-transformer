@@ -12,11 +12,6 @@ import through2 from 'through2';
 
 function insertPolyfill() {
     return through2.obj(function (file, enc, cb) {
-        if (!isAlipay()) {
-            cb(null, file);
-            return;
-        }
-
         if (file.path === path.resolve(options.src, "app.js")) {
             const polyfillPath = path.resolve(options.src, genSdkDir, 'polyfill.js');
             const polyfillRelative = getRelativePath(file.path, polyfillPath);

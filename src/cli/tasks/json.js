@@ -115,9 +115,12 @@ export function transformJson() {
 
             transformUsingComponents(json, file);
 
+            if (isAppJson) {
+                inheritGlobalComponents(json, file);
+            }
+
             if (isAlipay()) {
                 if (isAppJson) {
-                    inheritGlobalComponents(json, file);
                     transformAppTabBar(json);
                     transformWindowSetting(json.window);
                 } else {

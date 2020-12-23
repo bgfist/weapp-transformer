@@ -4,6 +4,7 @@ import { wxssSuffixes } from '../config';
 import { options } from "../options"
 import { globExt, normalizeRelativePath } from '../utils';
 
+/** 替换 import 导入的路径 */
 function transformImportPath(root) {
     root.nodes
         .filter(n => n.type === 'atrule' && n.name === 'import')

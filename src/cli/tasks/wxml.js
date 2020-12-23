@@ -205,7 +205,7 @@ function transformDataset(elems) {
 }
 
 /**
- * 替换data-属性
+ * 替换<import>标签的导入路径
  */
 function transformImportPath($) {
     $("import, include").each((_, n) => {

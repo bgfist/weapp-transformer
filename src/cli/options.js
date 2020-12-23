@@ -1,5 +1,6 @@
 import { supportedPlatforms } from "./config";
 import path from "path";
+import packageJson from "../../package.json"
 
 export const options = {};
 
@@ -34,7 +35,7 @@ export function parseOptions() {
                 return;
             case '-v':
             case '--version':
-                console.log(version);
+                console.log(packageJson.version);
                 return;
             case '-o':
             case '--out':
@@ -75,4 +76,6 @@ export function parseOptions() {
         platform,
         enableWatch
     });
+
+    return true;
 }

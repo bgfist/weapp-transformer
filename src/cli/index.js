@@ -17,7 +17,9 @@ export function checkSourceFolder() {
     }
 }
 
-parseOptions();
+if (!parseOptions()) {
+    process.exit();
+};
 checkSourceFolder();
 splitNodeModules();
 
