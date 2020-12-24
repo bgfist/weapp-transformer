@@ -7,6 +7,9 @@ import { transformWxml } from './wxml';
 import { transformWxs } from './wxs';
 import { transformWxss } from './wxss';
 
+/**
+ * gulp构建入口
+ */
 export function build(cb) {
     return gulp.parallel(
         copySdk,

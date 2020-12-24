@@ -4,6 +4,9 @@ import packageJson from "../../package.json"
 
 export const options = {};
 
+/**
+ * 解析命令行参数，将配置项存到全局
+ */
 export function parseOptions() {
     const args = process.argv.slice(2);
     const usage = [

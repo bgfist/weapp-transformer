@@ -10,6 +10,9 @@ import { genNpmDir, jsApiPrefixes } from '../config';
 export const npmModules = {};
 export const componentModules = {};
 
+/**
+ * 将npm模块分成普通的模块和自定义组件模块
+ */
 export function splitNodeModules() {
     const packageJsonPath = path.resolve(options.src, 'package.json');
 
@@ -37,6 +40,9 @@ export function splitNodeModules() {
     }
 }
 
+/**
+ * 用rollup打包npm包
+ */
 export function bundleNpm(cb) {
     if (Object.keys(npmModules).length === 0) {
         cb();

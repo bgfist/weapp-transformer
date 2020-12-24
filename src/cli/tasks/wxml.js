@@ -30,13 +30,9 @@ function extractInlineWxs($, file) {
 
 
         const vinyl = file.clone({ contents: false });
-
         vinyl.path = path.join(vinyl.base, genWxsDir, `${genFileName() + wxsSuffixes[options.platform]}`);
-        // const moduleName = n.attr('module');
-        // const filename = file.basename.slice(0, -5);
-        // vinyl.path = path.join(vinyl.base, genWxsDir, vinyl.relative);
-        // vinyl.basename = `${filename}_${moduleName}${wxsSuffixes[options.platform]}`;
 
+        // 改为es6的导入导出
         const content = transformSync(code, {
             plugins: [babelTransformCommonjs],
             configFile: false,
@@ -205,7 +201,7 @@ function transformDataset(elems) {
 }
 
 /**
- * 替换<import>标签的导入路径
+ * 替换import、include标签的导入路径
  */
 function transformImportPath($) {
     $("import, include").each((_, n) => {
@@ -244,7 +240,7 @@ export function transformWxml() {
             transformWxs($);
             transformImportPath($);
 
-            file.contents = Buffer.from($.html({ decodeEntities: false }));
+            file.contents = Buffer.from($.html({ decodeEntities: false, selfClosingTags: true }));
             this.push(file);
 
             callback();

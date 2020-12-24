@@ -1,3 +1,6 @@
+/**
+ * 将 Behavior({...}) 直接改为 {...} , 相当于对其参数不处理, 由mixin机制自行处理
+ */
 export default function declare({ types: t }, options, dirname) {
     return {
         name: "transform-wx-behavior",

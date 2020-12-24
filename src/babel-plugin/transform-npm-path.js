@@ -4,6 +4,9 @@ import { options } from '../cli/options';
 import { npmModules } from "../cli/tasks/npm";
 import { getRelativePath, normalizeRelativePath } from '../cli/utils';
 
+/**
+ * 将npm包的引用路径改为构建后的真实路径
+ */
 export default function declare({ types: t }, _, dirname) {
 
     function getRealPath(p, filepath) {

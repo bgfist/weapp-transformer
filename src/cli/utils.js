@@ -5,6 +5,9 @@ import { options } from './options';
 import through2 from 'through2';
 import { genNpmDir, supportedPlatforms, wxssSuffixes, wxmlSuffixes, wxsSuffixes } from './config';
 
+/**
+ * 根据文件名后缀过滤平台相关的文件
+ */
 function filterPlatformFiles(ext) {
     const files = {};
 
@@ -108,6 +111,9 @@ export function globOthers() {
         .pipe(renameNodeModules())
 }
 
+/**
+ * 替换npm模块里的文件路径为生成后的路径
+ */
 export function replaceNodeModulesPath(filepath, file) {
     return filepath.replace(/(?<=\/)node_modules(?=\/)/, () => {
         if (file) {
@@ -117,6 +123,9 @@ export function replaceNodeModulesPath(filepath, file) {
     });
 }
 
+/**
+ * 规范相对路径
+ */
 export function normalizeRelativePath(p) {
     if (path.isAbsolute(p)) {
         return p;
@@ -136,8 +145,4 @@ export function getRelativePath(from, to) {
 
 export function getAppJsonPath() {
     return path.resolve(options.src, 'app.json')
-}
-
-export function startWith(str, haystack) {
-    return str.indexOf(haystack) === 0
 }

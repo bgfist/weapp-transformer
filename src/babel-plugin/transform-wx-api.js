@@ -1,3 +1,6 @@
+/**
+ * 将 `wx.` api改为各平台对应的全局对象名
+ */
 export default function declare({ types: t }, options, dirname) {
     const namespace = options?.namespace;
 

@@ -24,3 +24,4 @@
 </view>
 <view src='{{dadada}} "dada" sdada' />
 <VIew SRC='dadad' dataUrl='dasdad' bind:touchstart="okk"/>
+<input type="text" />

@@ -6,6 +6,9 @@ import through2 from 'through2';
 import { isAlipay } from "../config";
 import { componentModules } from "./npm";
 
+/**
+ * 替换json的字段名
+ */
 function replaceJsonKey(json, oldKey, newKey, replacer) {
     if (oldKey in json) {
         const value = json[oldKey];
@@ -14,6 +17,9 @@ function replaceJsonKey(json, oldKey, newKey, replacer) {
     }
 }
 
+/**
+ * 处理 tabBar 配置项
+ */
 function transformAppTabBar(json) {
     if (json.tabBar) {
         if (json.tabBar.custom) {
@@ -36,6 +42,9 @@ function transformAppTabBar(json) {
     }
 }
 
+/**
+ * 处理 windows 配置项
+ */
 function transformWindowSetting(json) {
     if (!isAlipay()) {
         return;
@@ -52,6 +61,9 @@ function transformWindowSetting(json) {
     }
 }
 
+/**
+ * 处理 usingComponents 配置项
+ */
 function transformUsingComponents(json, file) {
     let usingComponents = json.usingComponents;
     for (const name in usingComponents) {
@@ -93,6 +105,7 @@ function transformUsingComponents(json, file) {
     }
 }
 
+/** 全局组件 */
 let globalComponents = null
 /**
  * 将app.json里注册的全局组件加到页面里去
