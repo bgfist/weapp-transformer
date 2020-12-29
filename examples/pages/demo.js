@@ -20,5 +20,14 @@ function test() {
 }
 
 Page({
+    aaa: '1111',
+    bbb: {
+        name: 'jack'
+    },
+    onLoad() {
 
+    },
+    sayHello() {
+
+    }
 });

@@ -21,7 +21,9 @@ import { getRelativePath } from "../cli/utils";
  * ```
  */
 export default function ({ types: t }, _, dirname) {
-    const sdkPath = path.resolve(options.src, genSdkDir, `component.js`);
+    const sdkComponentPath = path.resolve(options.src, genSdkDir, `component.js`);
+    const sdkPagePath = path.resolve(options.src, genSdkDir, `page.js`);
+
 
     return {
         name: "transform-wx-component",
@@ -45,11 +47,23 @@ export default function ({ types: t }, _, dirname) {
                 // transform `Component`
                 if (name === "Component") {
                     const filepath = state.file.opts.filename;
-                    const sdkRelativePath = getRelativePath(filepath, sdkPath);
+                    const sdkRelativePath = getRelativePath(filepath, sdkComponentPath);
                     _path.replaceWith(
                         this.addDefaultImport(
                             sdkRelativePath,
                             "MCComponent"
+                        )
+                    );
+                    return;
+                }
+                // transform `Page`
+                else if (name === 'Page') {
+                    const filepath = state.file.opts.filename;
+                    const sdkRelativePath = getRelativePath(filepath, sdkPagePath);
+                    _path.replaceWith(
+                        this.addDefaultImport(
+                            sdkRelativePath,
+                            "MCPage"
                         )
                     );
                     return;

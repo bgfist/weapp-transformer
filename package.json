@@ -1,6 +1,6 @@
 {
   "name": "mc_transformer",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "description": "",
   "bin": {
     "mc_transformer": "bin/mc_transformer.js"
