@@ -3,6 +3,8 @@ import path from 'path';
 import * as rollup from 'rollup';
 import commonjs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import json from '@rollup/plugin-json';
 import babelTransformWxApi from '../../babel-plugin/transform-wx-api';
 import { options } from '../options';
 import { genNpmDir, jsApiPrefixes } from '../config';
@@ -60,6 +62,10 @@ export function bundleNpm(cb) {
     return rollup.rollup({
         input: appendIndex(npmModules),
         plugins: [
+            json(),
+            nodeResolve({
+                preferBuiltins: false
+            }),
             commonjs(),
             babel({
                 configFile: false,
@@ -74,7 +80,8 @@ export function bundleNpm(cb) {
         bundle.write({
             output: {
                 dir: path.resolve(options.dist, genNpmDir),
-                format: 'cjs'
+                format: 'cjs',
+                exports: 'auto'
             }
         })
     });

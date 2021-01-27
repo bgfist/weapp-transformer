@@ -1,6 +1,6 @@
 {
   "name": "mc_transformer",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "",
   "bin": {
     "mc_transformer": "bin/mc_transformer.js"
@@ -29,6 +29,8 @@
     "@babel/core": "^7.12.3",
     "@rollup/plugin-babel": "^5.2.2",
     "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^11.1.0",
     "babel-plugin-transform-commonjs": "^1.1.6",
     "cheerio": "^1.0.0-rc.5",
     "gulp": "^4.0.2",
