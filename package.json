@@ -1,5 +1,5 @@
 {
-  "name": "mc_transformer",
+  "name": "@utils/mc_transformer",
   "version": "2.2.3",
   "description": "",
   "bin": {
