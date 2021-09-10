@@ -29,34 +29,27 @@ mc_transformer src -o build -p alipay
 
 转成百度小程序：
 ```sh
-mc_transformer src --p baidu
+mc_transformer src -p baidu
 ```
 
 转成字节跳动小程序：
 ```sh
-mc_transformer src --p bytedance
+mc_transformer src -p bytedance
 ```
-
-### 目录结构
-
-`src/cli`: cli工具，用gulp处理微信小程序各种后缀的文件，转换至对应平台
-
-`sdk`: 各个平台需要的一些代码
 
 ## 微信小程序转其他平台小程序注意事项
 
 > 注意，绝大多数不兼容是因为代码书写不规范，建议整理源码而不是让工具来处理
 
-### 通用
+### 常见问题
 
 1. 图片路径不要加不必要的空格，不然开发者工具会识别不了，如网络资源路径前面不要有空格 `" https://..."` -> `"https://..."`
 2. 小程序插件暂不支持
 3. 自定义tabBar暂不支持
 4. 鉴权
 5. `<view wx:key="">` 会转成 `<view wx:key>`, 这样会报错，所以一定要提供属性值
-6. 
 
-### 支付宝
+### 支付宝小程序常见问题
 
 平台差异较大，主要是Component构造器写法不同，及事件机制不同。
 
@@ -67,15 +60,13 @@ mc_transformer src --p bytedance
 5. props和data里不要有相同的字段名，支付宝不支持
 6. 支付宝的组件样式未全局隔离，需要手动隔离
 
-### 百度
+### 百度小程序常见问题
 
 1. `s-for` 与 `s-if` 不能写在同一个标签上
 2. 自定义组件属性名应避免以 `prop-` 开头，在处理过程中会将该前缀删除
 
-### 头条
+### 头条小程序常见问题
 
 1. beta版本不支持sjs语法，用稳定版（文档有误）
 2. 自定义组件只支持属性的监听observer，不支持observers
 3. npm模块构建有问题（mc_transformer会帮你构建）
-
-

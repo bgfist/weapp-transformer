@@ -14,7 +14,7 @@ export default function MCComponent(options) {
     observers = {},
     methods = {},
     behaviours,
-    
+
     // ignored options
     moved,
     error,

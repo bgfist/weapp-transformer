@@ -3,6 +3,6 @@ import { options } from "../options";
 import { globOthers } from "../utils";
 
 export function copyOthers() {
-    return globOthers()
-        .pipe(gulp.dest(options.dist))
+	return globOthers()
+		.pipe(gulp.dest(options.dist))
 }

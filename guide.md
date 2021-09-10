@@ -25,6 +25,7 @@
 7. 支付宝的sjs模块只支持es6写法的导入导出，需要babel处理
 
 ### `ast`处理器：
+
 * js : `babel`
 * wxs: `babel`
 * wxml: `cheerio` (内含 `html-parser2`)
@@ -33,25 +34,14 @@
 
 ### 目录结构
 
-```
-- bin           该npm包的命令行入口       
-
-- dist          examples目录转换成各个平台后的代码
-
-- examples      示例微信小程序项目，供转换测试用
-
-- lib           编译后的代码
-
-- src           源码
-
-    - babel-plugin  一些babel转换的插件
-
-    - cli           命令行工具的具体实现
-
-        - tasks         gulp任务
-
-        - options.js    处理命令行参数
-
-    - sdk           各个平台需要的运行时适配代码
-
-```
+- `bin` 命令行入口
+- `examples` 示例项目
+  - `gulp` 用gulp转换
+  - `webpack` 用webpack转换
+- `lib`
+- `src`
+  - `babel` babel插件
+  - `core` 核心转换实现
+  - `gulp` gulp实现
+  - `webpack` webpack实现
+  - `sdk` 转换后所需的一些运行时代码
