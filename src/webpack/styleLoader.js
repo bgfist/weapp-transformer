@@ -1,15 +1,19 @@
+import { getPostcssPlugins } from '../common/transformWxss';
+
 /**
  * 将文件后缀改为微信的
  */
 const loaderUtils = require('loader-utils');
-const { replaceExt } = require('./utils');
+const postcss = require('postcss');
 
 /**
  * @type {import('webpack').loader.Loader}
  */
-const loader = function () {
-  const { ext } = loaderUtils.getOptions(this);
-  this.resourcePath = replaceExt(this.resourcePath, ext);
+const loader = function (source) {
+  const { platform } = loaderUtils.getOptions(this);
+  return postcss(getPostcssPlugins(platform))
+    .process(source)
+    .then(result => result.css)
 };
 
 export default loader;

@@ -1,8 +1,9 @@
 import cheerio from "cheerio";
 import { transformSync } from "@babel/core";
-import babelTransformCommonjs from "babel-plugin-transform-commonjs";
-import { wxmlDirectivePrefixes, isAlipay, wxsSuffixes, wxsTags, wxmlSuffixes } from "./config";
-import { normalizeRelativePath } from "./utils";
+
+import { wxmlDirectivePrefixes, wxsSuffixes, wxsTags, wxmlSuffixes } from "./config";
+import { normalizeRelativePath, isAlipay } from "./utils";
+import { getBabelPlugins } from "./transformWxs";
 
 /** @typedef {{path: string; code: string}} Dep */
 
@@ -14,7 +15,7 @@ function genFileName() {
 /**
  * 将内联的wxs代码抽出到外部文件
  */
-function extractInlineWxs($, getDepPath) {
+function extractInlineWxs($, platform, getDepPath) {
   /** @type {Dep[]} */
   const deps = [];
 
@@ -26,11 +27,11 @@ function extractInlineWxs($, getDepPath) {
       return;
     }
 
-    const depName = genFileName();
+    const depName = genFileName() + wxsSuffixes[platform];
     const depPath = getDepPath(depName);
     // 改为es6的导入导出
     const content = transformSync(code, {
-      plugins: [babelTransformCommonjs],
+      plugins: getBabelPlugins(platform),
       configFile: false,
       retainLines: true
     }).code;
@@ -61,7 +62,7 @@ function transformWxs($, platform) {
     }
     src = src.replace(/\.wxs$/, wxsSuffixes[platform]);
 
-    if (isAlipay()) {
+    if (isAlipay(platform)) {
       const module = n.attr("module");
       n.removeAttr("module");
       n.removeAttr("src");
@@ -109,7 +110,6 @@ const uppperCaseEventNames = {
   "touchcancel": "TouchCancel",
   "longtap": "LongTap",
   "transitionend": "TransitionEnd",
-  "animationiteration": "AnimationIteration",
   "animationiteration": "AnimationIteration",
   "animationstart": "AnimationStart",
   "animationend": "AnimationEnd",
@@ -214,7 +214,7 @@ function transformImportPath($, platform) {
  * @param {string} source 
  * @param {(depName: string) => string} getDepPath 
  */
-export default function transformTemplate(source, platform, getDepPath) {
+export function transformTemplate(source, platform, getDepPath) {
   const $ = cheerio.load(source, {
     _useHtmlParser2: true,
     recognizeSelfClosing: true,
@@ -228,7 +228,7 @@ export default function transformTemplate(source, platform, getDepPath) {
   let extraDeps = [];
 
   if (isAlipay(platform)) {
-    extraDeps = extractInlineWxs($, getDepPath);
+    extraDeps = extractInlineWxs($, platform, getDepPath);
     transformEventBind(children);
     transformDataset(children);
   }

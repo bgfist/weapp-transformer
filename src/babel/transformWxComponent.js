@@ -1,26 +1,34 @@
-import path from "path";
 import { addDefault } from "@babel/helper-module-imports";
-import { getRelativePath } from "../cli/utils";
+
+import { getRelativePath } from "../common/utils";
 
 /**
  * 将Component调用转换为对MCComponent的调用，主要给支付宝适配用
- * 
+ *
  * ```
  *  Component(...)
- * 
+ *
  * ```
  * 转换为：
- * 
+ *
  * ```
  * import MCComponent from '../mc_transform/sdk/component.js';
- * 
+ *
  * MCComponent(...)
- * 
+ *
  * ```
  */
-export default function ({ types: t }, { sdkDir, isNpm }) {
-  const sdkComponentPath = path.join(sdkDir, 'component.js');
-  const sdkPagePath = path.join(sdkDir, 'page.js');
+export default function (_, { sdkDir, request }) {
+  const replaceConfig = {
+    Component: {
+      name: "MCComponent",
+      path: require("path").join(sdkDir, "component.js"),
+    },
+    Page: {
+      name: "MCPage",
+      path: require("path").join(sdkDir, "page.js"),
+    },
+  };
 
   return {
     name: "transformWxComponent",
@@ -31,61 +39,31 @@ export default function ({ types: t }, { sdkDir, isNpm }) {
           importedInterop: "uncompiled",
           nameHint,
         });
-      }
+      };
     },
 
     visitor: {
-      ReferencedIdentifier(_path, state) {
-        const { node, scope } = _path;
+      ReferencedIdentifier(path, state) {
+        const { node, scope } = path;
         const { name } = node;
 
         if (scope.getBindingIdentifier(name)) return;
 
-        // transform `Component`
-        if (name === "Component") {
-          if (isNpm) {
-            _path.replaceWith(
-              this.addDefaultImport(
-                sdkComponentPath,
-                "MCComponent"
-              )
-            );
+        if (replaceConfig[name]) {
+          let { name: replaceName, path: replacePath } = replaceConfig[name];
+          const filepath = state.file.opts.filename;
+
+          // 文件本身就是sdk里的
+          if (request && request.indexOf(replacePath) !== -1) {
             return;
           }
 
-          const filepath = state.file.opts.filename;
-          const sdkRelativePath = getRelativePath(filepath, sdkComponentPath);
-          _path.replaceWith(
-            this.addDefaultImport(
-              sdkRelativePath,
-              "MCComponent"
-            )
-          );
-          return;
-        }
-        // transform `Page`
-        else if (name === 'Page') {
-          if (isNpm) {
-            _path.replaceWith(
-              this.addDefaultImport(
-                sdkPagePath,
-                "MCPage"
-              )
-            );
-            return;
+          if (require("path").isAbsolute(replacePath)) {
+            replacePath = getRelativePath(filepath, replacePath);
           }
-
-          const filepath = state.file.opts.filename;
-          const sdkRelativePath = getRelativePath(filepath, sdkPagePath);
-          _path.replaceWith(
-            this.addDefaultImport(
-              sdkRelativePath,
-              "MCPage"
-            )
-          );
-          return;
+          path.replaceWith(this.addDefaultImport(replacePath, replaceName));
         }
       },
-    }
-  }
+    },
+  };
 }

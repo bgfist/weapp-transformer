@@ -1,0 +1,5 @@
+@import "base.wxss";
+
+div {
+  font-size: 20px;
+}

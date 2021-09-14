@@ -12,14 +12,11 @@ export default function declare({ types: t }, { namespace }) {
 
         if (scope.getBindingIdentifier(name)) return;
 
-        // transform `wx`
         if (name === "wx") {
-          path.replaceWith(
-            t.identifier(namespace)
-          );
+          path.replaceWith(t.identifier(namespace));
           return;
         }
       },
-    }
-  }
+    },
+  };
 }

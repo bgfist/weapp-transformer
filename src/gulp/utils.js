@@ -1,9 +1,11 @@
-import path from 'path';
-import gulp from 'gulp';
-import { componentModules } from './tasks/npm';
-import { options } from './options';
-import through2 from 'through2';
-import { genNpmDir, supportedPlatforms, wxssSuffixes, wxmlSuffixes, wxsSuffixes } from './config';
+import path from "path";
+import gulp from "gulp";
+import { genNpmDir } from "./config";
+import { supportedPlatforms, wxssSuffixes, wxmlSuffixes, wxsSuffixes } from "../common/config";
+import { endsWith, getRelativePath, normalizeRelativePath } from "../common/utils";
+import { componentModules, npmModules } from "./tasks/npm";
+import { options } from "./options";
+import through2 from "through2";
 
 /**
  * 根据文件名后缀过滤平台相关的文件
@@ -11,10 +13,9 @@ import { genNpmDir, supportedPlatforms, wxssSuffixes, wxmlSuffixes, wxsSuffixes 
 function filterPlatformFiles(ext) {
   const files = {};
 
-  const endsWith = (str, haystack) => str.indexOf(haystack) === str.length - haystack.length;
-  const getPlatformExt = p => `.${p}.${ext}`;
+  const getPlatformExt = (p) => `.${p}.${ext}`;
   const platformExt = getPlatformExt(options.platform);
-  const excludePlatformExts = supportedPlatforms.filter(p => p !== options.platform).map(getPlatformExt);
+  const excludePlatformExts = supportedPlatforms.filter((p) => p !== options.platform).map(getPlatformExt);
 
   function transform(file, enc, cb) {
     let filepath = file.path;
@@ -33,7 +34,7 @@ function filterPlatformFiles(ext) {
     } else if (filepath in files) {
       cb();
       return;
-    };
+    }
 
     files[filepath] = file;
     cb();
@@ -67,11 +68,11 @@ function renameNodeModules() {
 
 function renameExt() {
   return through2.obj(function (file, enc, cb) {
-    if (file.extname === '.wxml') {
+    if (file.extname === ".wxml") {
       file.extname = wxmlSuffixes[options.platform];
-    } else if (file.extname === '.wxs') {
+    } else if (file.extname === ".wxs") {
       file.extname = wxsSuffixes[options.platform];
-    } else if (file.extname === '.wxss') {
+    } else if (file.extname === ".wxss") {
       file.extname = wxssSuffixes[options.platform];
     }
     cb(null, file);
@@ -81,34 +82,42 @@ function renameExt() {
 export function globExt(ext) {
   const pattern = `**/*.${ext}`;
 
-  return gulp.src([
-    pattern,
-    '!' + path.join(options.distBase, "**"),
-    '!miniprogram_npm/**',
-    '!node_modules/**',
-    ...Object.keys(componentModules).map(moduleName => path.join('node_modules', moduleName, pattern))
-  ], { base: options.src, cwd: options.src })
+  return gulp
+    .src(
+      [
+        pattern,
+        "!" + path.join(options.distBase, "**"),
+        "!miniprogram_npm/**",
+        "!node_modules/**",
+        ...Object.keys(componentModules).map((moduleName) => path.join("node_modules", moduleName, pattern)),
+      ],
+      { base: options.src, cwd: options.src }
+    )
     .pipe(filterPlatformFiles(ext))
     .pipe(renameNodeModules())
     .pipe(renameExt());
 }
 
 export function globOthers() {
-  const pattern = '**/*';
+  const pattern = "**/*";
 
-  return gulp.src([
-    pattern,
-    '!' + path.join(options.distBase, "**"),
-    '!miniprogram_npm/**',
-    '!node_modules/**',
-    ...Object.keys(componentModules).map(moduleName => path.join('node_modules', moduleName, pattern)),
-    '!**/*.js',
-    '!**/*.wxs',
-    '!**/*.json',
-    '!**/*.wxss',
-    '!**/*.wxml',
-  ], { base: options.src, cwd: options.src })
-    .pipe(renameNodeModules())
+  return gulp
+    .src(
+      [
+        pattern,
+        "!" + path.join(options.distBase, "**"),
+        "!miniprogram_npm/**",
+        "!node_modules/**",
+        ...Object.keys(componentModules).map((moduleName) => path.join("node_modules", moduleName, pattern)),
+        "!**/*.js",
+        "!**/*.wxs",
+        "!**/*.json",
+        "!**/*.wxss",
+        "!**/*.wxml",
+      ],
+      { base: options.src, cwd: options.src }
+    )
+    .pipe(renameNodeModules());
 }
 
 /**
@@ -117,14 +126,24 @@ export function globOthers() {
 export function replaceNodeModulesPath(filepath, file) {
   return filepath.replace(/(?<=\/)node_modules(?=\/)/, () => {
     if (file) {
-      file.isNpm = true
+      file.isNpm = true;
     }
-    return genNpmDir
+    return genNpmDir;
   });
 }
 
 export function getAppJsonPath() {
-  return path.resolve(options.src, 'app.json')
+  return path.resolve(options.src, "app.json");
 }
 
-export * from '../core/utils';
+/**
+ * 计算npm包的真实路径
+ */
+export function getNpmRealPath(p, filepath) {
+  if (p in npmModules) {
+    const npmBundlePath = path.resolve(options.src, genNpmDir, p, "index.js");
+    p = getRelativePath(filepath, npmBundlePath);
+  }
+
+  return normalizeRelativePath(p);
+}

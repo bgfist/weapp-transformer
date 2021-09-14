@@ -10,9 +10,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@utils/mc_transformer": "^2.2.3",
     "file-loader": "^6.2.0",
     "webpack": "^4.46.0",
-    "webpack-cli": "^4.8.0"
+    "webpack-cli": "^4.8.0",
+    "@utils/mc_transformer": "^2.2.3"
   }
 }

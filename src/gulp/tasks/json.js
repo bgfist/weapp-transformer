@@ -1,10 +1,11 @@
 import path from "path";
 import gulp from 'gulp';
-import { options } from "../options"
-import { getAppJsonPath, getRelativePath, globExt, replaceNodeModulesPath } from '../utils';
 import through2 from 'through2';
-import { isAlipay } from "../config";
+
+import { options } from "../options"
 import { componentModules } from "./npm";
+import { getAppJsonPath, globExt, replaceNodeModulesPath } from '../utils';
+import { getRelativePath, isAlipay } from "../../common/utils";
 
 /**
  * 替换json的字段名
@@ -46,7 +47,7 @@ function transformAppTabBar(json) {
  * 处理 windows 配置项
  */
 function transformWindowSetting(json) {
-	if (!isAlipay()) {
+	if (!isAlipay(options.platform)) {
 		return;
 	}
 
@@ -132,7 +133,7 @@ export function transformJson() {
 				inheritGlobalComponents(json, file);
 			}
 
-			if (isAlipay()) {
+			if (isAlipay(options.platform)) {
 				if (isAppJson) {
 					transformAppTabBar(json);
 					transformWindowSetting(json.window);

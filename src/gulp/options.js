@@ -1,6 +1,5 @@
-import { supportedPlatforms } from "./config";
 import path from "path";
-import packageJson from "../../package.json"
+import { supportedPlatforms, packageVersion } from "../common/config";
 
 export const options = {};
 
@@ -10,54 +9,54 @@ export const options = {};
 export function parseOptions() {
   const args = process.argv.slice(2);
   const usage = [
-    ''
-    , '  Usage: mc_transformer [options] src'
-    , ''
-    , '     src: source directory to transform'
-    , ''
-    , '  Options:'
-    , ''
-    , '    -p, --platform <..>     (required)Transform to specified platform'
-    , '                            Supported platforms are alipay,baidu,bytedance'
-    , ''
-    , '    -w, --watch             Watch files for changes and re-transform'
-    , '    -o, --out <dir>         Output to <dir> when transforming files'
-    , '    -v, --version           Display the version of Stylus'
-    , '    -h, --help              Display help information'
-    , ''
-  ].join('\n');
+    "",
+    "  Usage: mc_transformer [options] src",
+    "",
+    "     src: source directory to transform",
+    "",
+    "  Options:",
+    "",
+    "    -p, --platform <..>     (required)Transform to specified platform",
+    "                            Supported platforms are alipay,baidu,bytedance",
+    "",
+    "    -w, --watch             Watch files for changes and re-transform",
+    "    -o, --out <dir>         Output to <dir> when transforming files",
+    "    -v, --version           Display the version of Stylus",
+    "    -h, --help              Display help information",
+    "",
+  ].join("\n");
 
   let src, dist, platform, enableWatch;
   let arg;
   while (args.length) {
     arg = args.shift();
     switch (arg) {
-      case '-h':
-      case '--help':
+      case "-h":
+      case "--help":
         console.error(usage);
         return;
-      case '-v':
-      case '--version':
-        console.log(packageJson.version);
+      case "-v":
+      case "--version":
+        console.log(packageVersion);
         return;
-      case '-o':
-      case '--out':
+      case "-o":
+      case "--out":
         dist = args.shift();
-        if (!dist) throw new Error('--out <dir> required');
+        if (!dist) throw new Error("--out <dir> required");
         break;
-      case '-p':
-      case '--platform':
+      case "-p":
+      case "--platform":
         platform = args.shift();
-        if (!platform) throw new Error('--platform <..> required');
-        if (supportedPlatforms.indexOf(platform) < 0) throw new Error('Unsupported platform: ' + platform);
+        if (!platform) throw new Error("--platform <..> required");
+        if (supportedPlatforms.indexOf(platform) < 0) throw new Error("Unsupported platform: " + platform);
         break;
-      case '-w':
-      case '--watch':
+      case "-w":
+      case "--watch":
         enableWatch = true;
         break;
       default:
-        if (arg[0] === '-') {
-          throw new Error('Unsupported arg: ' + arg);
+        if (arg[0] === "-") {
+          throw new Error("Unsupported arg: " + arg);
         }
         src = arg;
         break;
@@ -68,8 +67,8 @@ export function parseOptions() {
     throw new Error("platform required");
   }
 
-  src = path.resolve(src || '.');
-  const distBase = dist || 'dist';
+  src = path.resolve(src || ".");
+  const distBase = dist || "dist";
   dist = path.resolve(distBase, platform);
 
   Object.assign(options, {
@@ -77,7 +76,7 @@ export function parseOptions() {
     dist,
     distBase,
     platform,
-    enableWatch
+    enableWatch,
   });
 
   return true;

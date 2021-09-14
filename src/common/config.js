@@ -1,4 +1,10 @@
-export { name as packageName } from '../../package.json';
+export {
+  name as packageName,
+  version as packageVersion
+} from '../../package.json';
+
+/** 支持的平台 */
+export const supportedPlatforms = ["alipay", "baidu", "bytedance"];
 
 /** js全局对象名 */
 export const jsApiPrefixes = {

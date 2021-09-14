@@ -1,17 +1,24 @@
 import { jsApiPrefixes } from "./config";
 import { isAlipay } from "./utils";
-import babelTransformWxApi from '../babel/transformWxApi';
-import babelTransformWxComponent from '../babel/transformWxComponent';
-import babelTransformWxBehavior from '../babel/transformWxBehavior';
+import babelTransformWxApi from "../babel/transformWxApi";
+import babelTransformWxComponent from "../babel/transformWxComponent";
+import babelTransformWxBehavior from "../babel/transformWxBehavior";
+import babelTransformNpmPath from "../babel/transformNpmPath";
 
-export default function getBabelConfig(platform) {
-  return {
-    plugins: [
-      [babelTransformWxApi, { namespace: jsApiPrefixes[platform] }],
-      isAlipay(platform) && [babelTransformWxComponent, {
-        sdkDir: '@utils/mc_transformer/sdk'
-      }],
-      isAlipay(platform) && babelTransformWxBehavior
-    ].filter(Boolean)
+export function getBabelPlugins(platform, { transformNpmPath, transformWxFunc } = {}) {
+  const plugins = [[babelTransformWxApi, { namespace: jsApiPrefixes[platform] }]];
+
+  if (isAlipay(platform) && transformWxFunc) {
+    plugins.push([
+      babelTransformWxComponent,
+      transformWxFunc,
+    ]);
+    plugins.push(babelTransformWxBehavior);
   }
+
+  if (transformNpmPath) {
+    plugins.push([babelTransformNpmPath, transformNpmPath]);
+  }
+
+  return plugins;
 }

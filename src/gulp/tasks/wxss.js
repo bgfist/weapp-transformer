@@ -1,24 +1,12 @@
 import gulp from 'gulp';
 import postcss from 'gulp-postcss';
-import { wxssSuffixes } from '../config';
-import { options } from "../options"
-import { globExt, normalizeRelativePath } from '../utils';
 
-/** 替换 import 导入的路径 */
-function transformImportPath(root) {
-	root.nodes
-		.filter(n => n.type === 'atrule' && n.name === 'import')
-		.forEach(n => {
-			// n.params被引号包裹
-			let importPath = n.params.slice(1, -1);
-			importPath = normalizeRelativePath(importPath.replace(/\.wxss/, wxssSuffixes[options.platform]));
-			importPath = n.params[0] + importPath + n.params[n.params.length - 1];
-			n.params = importPath;
-		});
-}
+import { options } from "../options"
+import { globExt } from '../utils';
+import { getPostcssPlugins } from '../../common/transformWxss';
 
 export function transformWxss() {
 	return globExt("wxss")
-		.pipe(postcss([transformImportPath]))
+		.pipe(postcss(getPostcssPlugins(options.platform)))
 		.pipe(gulp.dest(options.dist))
 }

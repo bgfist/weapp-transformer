@@ -10,7 +10,7 @@ export default function declare({ types: t }) {
         const { node } = path;
         const { callee, arguments: args } = node;
 
-        if (t.isIdentifier(callee) && callee.name === 'Behavior') {
+        if (t.isIdentifier(callee) && callee.name === "Behavior") {
           if (args.length !== 1) {
             throw new Error("不正确的Behaviour用法");
           }
@@ -18,6 +18,6 @@ export default function declare({ types: t }) {
           path.replaceWith(args[0]);
         }
       },
-    }
-  }
+    },
+  };
 }

@@ -1,14 +1,13 @@
 import gulp from 'gulp';
 import babel from 'gulp-babel';
 import path from "path";
-import { getRelativePath, globExt } from '../utils';
-import babelTransformWxApi from '../../babel/transform-wx-api';
-import babelTransformWxComponent from '../../babel/transform-wx-component';
-import babelTransformWxBehavior from '../../babel/transform-wx-behavior';
-import babelTransformNpmPath from '../../babel/transform-npm-path';
-import { options } from '../options';
-import { genSdkDir, isAlipay, jsApiPrefixes } from '../config';
 import through2 from 'through2';
+
+import { getNpmRealPath, globExt } from '../utils';
+import { options } from '../options';
+import { genSdkDir } from '../config';
+import { getBabelPlugins } from '../../common/transformJs';
+import { getRelativePath } from '../../common/utils';
 
 /**
  * 在app.js中导入sdk/polyfill.js文件
@@ -29,14 +28,14 @@ export function transformJs() {
 	return globExt("js")
 		.pipe(
 			babel({
-				plugins: [
-					[babelTransformWxApi, { namespace: jsApiPrefixes[options.platform] }],
-					isAlipay() && [babelTransformWxComponent, {
+				plugins: getBabelPlugins(options.platform, {
+					transformWxFunc: {
 						sdkDir: path.resolve(options.src, genSdkDir)
-					}],
-					isAlipay() && babelTransformWxBehavior,
-					babelTransformNpmPath
-				].filter(Boolean),
+					},
+					transformNpmPath: {
+						getRealPath: getNpmRealPath
+					}
+				}),
 				configFile: false,
 				retainLines: true
 			})

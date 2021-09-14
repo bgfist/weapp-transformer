@@ -1,17 +1,16 @@
 import gulp from 'gulp';
 import babel from 'gulp-babel';
 import rename from 'gulp-rename';
+
+import { wxsSuffixes } from '../../common/config';
 import { globExt } from '../utils';
-import babelTransformCommonjs from "babel-plugin-transform-commonjs";
 import { options } from '../options';
-import { isAlipay, wxsSuffixes } from '../config';
+import { getBabelPlugins } from '../../common/transformWxs';
 
 export function transformWxs() {
 	return globExt("wxs")
 		.pipe(babel({
-			plugins: [
-				isAlipay() && babelTransformCommonjs
-			].filter(Boolean),
+			plugins: getBabelPlugins(options.platform),
 			configFile: false,
 			retainLines: true
 		}))
